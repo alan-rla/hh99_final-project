@@ -14,7 +14,9 @@ import {
 import { UsersService } from './users.service';
 import { UndefinedToNullInterceptor } from 'src/common/interceptors/undefinedToNull.interceptor';
 import {
+  ApiBody,
   ApiCookieAuth,
+  ApiHeader,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -25,6 +27,7 @@ import { User } from 'src/common/decorators/user.decorator';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Users } from 'src/entities/Users';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('USERS')
@@ -64,8 +67,11 @@ export class UsersController {
     }
   }
 
-  @ApiResponse({
+  @ApiBody({
     type: LoginUserDto,
+  })
+  @ApiResponse({
+    type: LoginResponseDto,
     status: 200,
     description: '로그인 성공',
   })
@@ -77,7 +83,7 @@ export class UsersController {
   }
 
   @ApiResponse({
-    type: LoginUserDto,
+    type: LoginResponseDto,
     status: 200,
     description: '내 정보 조회 성공',
   })
