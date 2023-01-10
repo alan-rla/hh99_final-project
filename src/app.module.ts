@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigModule } from './config/config.module';
 import { TypeOrmConfigService } from './config/config.service';
 import { AuthModule } from './auth/auth.module';
+import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { PopulationModule } from './population/population.module';
       inject: [TypeOrmConfigService],
     }),
     PopulationModule,
+    RoadsModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
