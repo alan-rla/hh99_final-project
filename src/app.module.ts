@@ -10,6 +10,7 @@ import { TypeOrmConfigService } from './config/config.service';
 import { AuthModule } from './auth/auth.module';
 import { BusModule } from './bus/bus.module';
 import { RoadsModule } from './roads/roads.module';
+import { PopulationModule } from './population/population.module';
 
 @Module({
   imports: [
@@ -21,8 +22,9 @@ import { RoadsModule } from './roads/roads.module';
       useClass: TypeOrmConfigService,
       inject: [TypeOrmConfigService],
     }),
-    BusModule,
+    PopulationModule,
     RoadsModule,
+    BusModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
