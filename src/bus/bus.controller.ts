@@ -1,17 +1,17 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { BusService } from './bus.service';
 
-@Controller('bus')
+@Controller('place')
 export class BusController {
   constructor(private readonly busService: BusService) {}
 
-  @Get()
-  findAll() {
-    return this.busService.findAll();
+  @Get('/:placeId/bus')
+  findAll(@Param('placeId') placeId: string) {
+    return this.busService.findAll(placeId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.busService.findOne(+id);
+  @Get('/:placeId/bus/:busId')
+  findOne(@Param('placeId') placeId: string, @Param('busId') busId: string) {
+    return this.busService.findOne(placeId, busId);
   }
 }
