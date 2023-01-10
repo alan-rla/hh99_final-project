@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import convert from 'xml-js';
 import { FindAllRoadDto } from './dto/findall-road-response.dto';
 import removeJsonTextAttribute from 'src/common/functions/xml.value.converter';
+import { HttpException } from '@nestjs/common/exceptions';
 // import { CreateRoadDto } from './dto/create-road.dto';
 // import { UpdateRoadDto } from './dto/update-road.dto';
 
@@ -22,7 +23,9 @@ export class RoadsService {
       }),
     );
 
-    return data;
+    if (!data['SeoulRtd.citydata'])
+      throw new HttpException('wrong place name', 404);
+    else return data['SeoulRtd.citydata']['CITYDATA']['ROAD_TRAFFIC_STTS'];
   }
 
   findOne(id: number) {

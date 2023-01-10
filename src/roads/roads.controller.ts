@@ -19,8 +19,6 @@ export class RoadsController {
 
   @Get(':placeId/roads')
   async findAllRoads(@Param('placeId') placeId: string) {
-    console.log(placeId);
-
     return this.roadsService.findAllRoads(placeId);
   }
 
