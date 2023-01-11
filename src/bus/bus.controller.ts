@@ -11,7 +11,7 @@ export class BusController {
   }
 
   @Get('/:placeId/bus/:busId')
-  findOne(@Param('placeId') placeId: string, @Param('busId') busId: string) {
-    return this.busService.findOne(placeId, busId);
+  findOne(@Param('placeId') placeId: string, @Param('busId') busId: number) {
+    return this.busService.findOne(placeId, +busId);
   }
 }

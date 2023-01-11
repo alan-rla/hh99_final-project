@@ -1,6 +1,6 @@
 import { map } from 'rxjs';
 import removeJsonTextAttribute from 'src/common/functions/xml.value.converter';
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import convert from 'xml-js';
 
@@ -11,27 +11,44 @@ export class BusService {
   async findAll(placeId: string) {
     const apiUrl = `http://openapi.seoul.go.kr:8088/${process.env.BUS_API_SECRET_KEY}/xml/citydata/1/2/${placeId}`;
 
-    try {
-      const result = await this.httpService.get(encodeURI(apiUrl)).toPromise();
+    const result = await this.httpService.get(encodeURI(apiUrl)).toPromise();
 
-      const data = convert.xml2json(result.data, {
-        compact: true,
-        spaces: 4,
-        textFn: removeJsonTextAttribute,
-      });
-      const dataToJson = JSON.parse(data);
+    const data = convert.xml2json(result.data, {
+      compact: true,
+      spaces: 4,
+      textFn: removeJsonTextAttribute,
+    });
+    const dataToJson = JSON.parse(data);
 
-      const busData = dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS;
-      console.log(busData);
+    if (!dataToJson['SeoulRtd.citydata'])
+      throw new HttpException('wrong place name', 404);
 
-      return busData;
-    } catch (e) {
-      console.error(e);
-      return e;
-    }
+    const busData =
+      dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
+
+    return busData;
   }
 
-  findOne(placeId: string, busId: string) {
-    return `This action returns a #${busId} bus`;
+  async findOne(placeId: string, busId: number) {
+    const apiUrl = `http://openapi.seoul.go.kr:8088/${process.env.BUS_API_SECRET_KEY}/xml/citydata/1/2/${placeId}`;
+
+    const result = await this.httpService.get(encodeURI(apiUrl)).toPromise();
+
+    const data = convert.xml2json(result.data, {
+      compact: true,
+      spaces: 4,
+      textFn: removeJsonTextAttribute,
+    });
+    const dataToJson = JSON.parse(data);
+
+    if (!dataToJson['SeoulRtd.citydata'])
+      throw new HttpException('wrong place name', 404);
+
+    const busData =
+      dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
+
+    const resultData = busData.find((obj: any) => obj.BUS_ARS_ID === busId);
+
+    return resultData;
   }
 }
