@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigModule } from './config/config.module';
 import { TypeOrmConfigService } from './config/config.service';
 import { AuthModule } from './auth/auth.module';
+import { BusModule } from './bus/bus.module';
 import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
 
@@ -23,6 +24,7 @@ import { PopulationModule } from './population/population.module';
     }),
     PopulationModule,
     RoadsModule,
+    BusModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
