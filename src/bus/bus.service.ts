@@ -1,3 +1,4 @@
+import { PlaceIdRequestDto } from './dto/placeId-request.dto';
 import { map } from 'rxjs';
 import removeJsonTextAttribute from 'src/common/functions/xml.value.converter';
 import { Injectable, HttpException } from '@nestjs/common';
@@ -8,7 +9,7 @@ import convert from 'xml-js';
 export class BusService {
   constructor(private readonly httpService: HttpService) {}
 
-  async findAll(placeId: string) {
+  async findAll(placeId: PlaceIdRequestDto) {
     const apiUrl = `http://openapi.seoul.go.kr:8088/${process.env.BUS_API_SECRET_KEY}/xml/citydata/1/2/${placeId}`;
 
     const result = await this.httpService.get(encodeURI(apiUrl)).toPromise();
@@ -29,7 +30,7 @@ export class BusService {
     return busData;
   }
 
-  async findOne(placeId: string, busId: number) {
+  async findOne(placeId: PlaceIdRequestDto, busId: number) {
     const apiUrl = `http://openapi.seoul.go.kr:8088/${process.env.BUS_API_SECRET_KEY}/xml/citydata/1/2/${placeId}`;
 
     const result = await this.httpService.get(encodeURI(apiUrl)).toPromise();
@@ -47,7 +48,8 @@ export class BusService {
     const busData =
       dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
 
-    const resultData = busData.find((obj: any) => obj.BUS_ARS_ID === busId);
+    const resultData = busData.find((obj: any) => obj.BUS_STN_ID === busId);
+    if (!resultData) throw new HttpException('wrong busId', 404);
 
     return resultData;
   }
