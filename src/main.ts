@@ -33,6 +33,13 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // CORS 설정
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+    optionsSuccessStatus: 200,
+  });
+
   // 쿠키, Passport 설정
   app.use(cookieParser());
   app.use(
