@@ -10,13 +10,20 @@ import {
 import { PopulationService } from './population.service';
 import { CreatePopulationDto } from './dto/create-population.dto';
 import { UpdatePopulationDto } from './dto/update-population.dto';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { PopulationDto } from './dto/findall-population.dto';
 
-@ApiTags('population')
+@ApiTags('POPULATION')
 @Controller('population')
 export class PopulationController {
   constructor(private readonly populationService: PopulationService) {}
 
+  @ApiResponse({
+    type: PopulationDto,
+    status: 200,
+    description: '인구 정보 조회',
+  })
+  @ApiOperation({ summary: '인구 정보 전체 조회' })
   @Get('/place/:placeId')
   async findAll(@Param('placeId') placeId: string) {
     console.log('placeId: ', placeId);

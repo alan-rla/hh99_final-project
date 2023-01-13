@@ -25,8 +25,8 @@ async function bootstrap() {
 
   // Swagger 세팅
   const config = new DocumentBuilder()
-    .setTitle('HH99 Final Project API')
-    .setDescription('항해99 실전 프로젝트 API')
+    .setTitle("D'OH Project API")
+    .setDescription("D'OH 프로젝트 API")
     .setVersion('1.0')
     .addCookieAuth('connect.sid')
     .build();
