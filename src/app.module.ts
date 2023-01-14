@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { BusModule } from './bus/bus.module';
 import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
+import { AreaModule } from './area/area.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PopulationModule } from './population/population.module';
     PopulationModule,
     RoadsModule,
     BusModule,
+    AreaModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],

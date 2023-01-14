@@ -25,13 +25,20 @@ async function bootstrap() {
 
   // Swagger 세팅
   const config = new DocumentBuilder()
-    .setTitle('HH99 Final Project API')
-    .setDescription('항해99 실전 프로젝트 API')
+    .setTitle("D'OH Project API")
+    .setDescription("D'OH 프로젝트 API")
     .setVersion('1.0')
     .addCookieAuth('connect.sid')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  // CORS 설정
+  app.enableCors({
+    origin: '*',
+    credentials: true,
+    optionsSuccessStatus: 200,
+  });
 
   // 쿠키, Passport 설정
   app.use(cookieParser());
