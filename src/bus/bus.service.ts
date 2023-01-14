@@ -27,6 +27,10 @@ export class BusService {
     const busData =
       dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
 
+    for (const data of busData) {
+      delete data.BUS_DETAIL;
+    }
+
     return busData;
   }
 
