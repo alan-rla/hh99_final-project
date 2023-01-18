@@ -1,4 +1,10 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  CacheModule,
+  CacheStore,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -12,6 +18,7 @@ import { BusModule } from './bus/bus.module';
 import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
 import { AreaModule } from './area/area.module';
+import * as redisStore from 'cache-manager-ioredis';
 
 @Module({
   imports: [
@@ -22,6 +29,12 @@ import { AreaModule } from './area/area.module';
       imports: [TypeOrmConfigModule],
       useClass: TypeOrmConfigService,
       inject: [TypeOrmConfigService],
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: '127.0.0.1',
+      port: 6379,
     }),
     PopulationModule,
     RoadsModule,
