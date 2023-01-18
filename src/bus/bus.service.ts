@@ -1,13 +1,21 @@
 import { PlaceIdRequestDto } from './dto/placeId-request.dto';
-import { map } from 'rxjs';
 import removeJsonTextAttribute from 'src/common/functions/xml.value.converter';
-import { Injectable, HttpException } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  CACHE_MANAGER,
+  Inject,
+} from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import convert from 'xml-js';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class BusService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async findAll(placeId: PlaceIdRequestDto) {
     const apiUrl = `http://openapi.seoul.go.kr:8088/${process.env.BUS_API_SECRET_KEY}/xml/citydata/1/2/${placeId}`;
@@ -20,6 +28,9 @@ export class BusService {
       textFn: removeJsonTextAttribute,
     });
     const dataToJson = JSON.parse(data);
+    await this.cacheManager.set('test', JSON.stringify(dataToJson));
+    const test = JSON.parse(await this.cacheManager.get('test'));
+    console.log(test);
 
     if (!dataToJson['SeoulRtd.citydata'])
       throw new HttpException('wrong place name', 404);
@@ -53,6 +64,10 @@ export class BusService {
       dataToJson['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
 
     const resultData = busData.find((obj: any) => obj.BUS_STN_ID === busId);
+
+    const test = JSON.parse(await this.cacheManager.get('test'));
+    console.log(test);
+
     if (!resultData) throw new HttpException('wrong busId', 404);
 
     return resultData;
