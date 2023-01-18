@@ -54,7 +54,7 @@ export class RoadsService {
       data['SeoulRtd.citydata']['CITYDATA']['ROAD_TRAFFIC_STTS'][
         'ROAD_TRAFFIC_STTS'
       ];
-    const result = arr.find(obj => obj['LINK_ID'] === roadId);
+    const result = arr.find((obj) => obj['LINK_ID'] === roadId);
 
     const test = JSON.parse(await this.cacheManager.get('test'));
     console.log(test);
