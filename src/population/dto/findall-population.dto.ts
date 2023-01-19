@@ -1,6 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class PopulationDto {
+  // @ApiProperty({
+  //   example: '강남 MICE 관광특구',
+  //   description: '지역 이름',
+  // })
+  // readonly AREA_NM: string;
+
   @ApiProperty({
     example: '여유',
     description: '장소 혼잡도 지표',

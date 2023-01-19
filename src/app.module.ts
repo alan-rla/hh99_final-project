@@ -19,6 +19,7 @@ import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
 import { AreaModule } from './area/area.module';
 import * as redisStore from 'cache-manager-ioredis';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import * as redisStore from 'cache-manager-ioredis';
     RoadsModule,
     BusModule,
     AreaModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
