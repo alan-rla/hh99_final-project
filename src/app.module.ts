@@ -43,6 +43,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     RoadsModule,
     BusModule,
     AreaModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
