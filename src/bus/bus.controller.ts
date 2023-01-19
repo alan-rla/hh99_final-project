@@ -1,3 +1,5 @@
+import { CronJob } from 'cron';
+import { Timeout, SchedulerRegistry } from '@nestjs/schedule';
 import { PlaceIdRequestDto } from './dto/placeId-request.dto';
 import { UndefinedToNullInterceptor } from 'src/common/interceptors/undefinedToNull.interceptor';
 import {
@@ -13,7 +15,21 @@ import { BusService } from './bus.service';
 @UseInterceptors(UndefinedToNullInterceptor)
 @Controller('place')
 export class BusController {
-  constructor(private readonly busService: BusService) {}
+  constructor(
+    private readonly busService: BusService,
+    private schedulerRegistry: SchedulerRegistry,
+  ) {}
+
+  @ApiOperation({ summary: '50개 지역 버스 요약 정보 REDIS 저장' })
+  @Timeout(0)
+  async saveBusData() {
+    await this.busService.saveBusData();
+    const saveData = new CronJob('0 */5 * * *', () => {
+      this.busService.saveBusData();
+    });
+    this.schedulerRegistry.addCronJob('save data', saveData);
+    saveData.start();
+  }
 
   @ApiOperation({
     summary: '장소이름/bus',
@@ -64,7 +80,7 @@ export class BusController {
     },
   })
   @ApiParam({
-    name: 'busId',
+    name: 'busId = BUS_STN_ID',
     required: true,
     description: '정류소ID',
     example: 122000111,
