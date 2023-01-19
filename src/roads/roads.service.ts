@@ -55,13 +55,14 @@ export class RoadsService {
       );
       result.push(data);
     }
-    return result;
+    return { result };
   }
 
   async findRoads(placeId: string) {
     const result = JSON.parse(
       await this.cacheManager.get(`ROAD_TRAFFIC_${placeId}`),
     );
-    return result;
+    if (!result) throw new HttpException('wrong place name', 404);
+    else return { result };
   }
 }

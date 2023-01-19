@@ -11,7 +11,7 @@ import {
 import { RoadsService } from './roads.service';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
-import { RoadStatusDto, RoadTrafficDto } from './dto/findall-road-response.dto';
+import { FindAllRoadDto, FindRoadsDto } from './dto/findall-road-response.dto';
 import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 
@@ -39,7 +39,7 @@ export class RoadsController {
   }
 
   @ApiResponse({
-    type: Array<RoadTrafficDto>,
+    type: FindAllRoadDto,
     status: 200,
     description: '도로 정보 전체 조회',
   })
@@ -50,7 +50,7 @@ export class RoadsController {
   }
 
   @ApiResponse({
-    type: Array<RoadStatusDto>,
+    type: FindRoadsDto,
     status: 200,
     description: '도로 정보 상세 출력',
   })
