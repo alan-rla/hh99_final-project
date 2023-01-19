@@ -25,9 +25,9 @@ export class PopulationController {
   })
   @ApiOperation({ summary: '인구 정보 전체 조회' })
   @Get('/place/:placeId')
-  async findAll(@Param('placeId') placeId: string) {
+  async find(@Param('placeId') placeId: string) {
     console.log('placeId: ', placeId);
-    return await this.populationService.findAll(placeId);
+    return await this.populationService.find(placeId);
   }
 }
 
