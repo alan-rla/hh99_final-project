@@ -30,8 +30,8 @@ export class RoadsService {
       )['SeoulRtd.citydata']['CITYDATA']['ROAD_TRAFFIC_STTS'];
 
       const avgRoadData = {
-        ...data['AVG_ROAD_DATA'],
         AREA_NM: area['AREA_NM'],
+        ...data['AVG_ROAD_DATA'],
       };
       const roadTrafficStts = data['ROAD_TRAFFIC_STTS'];
 

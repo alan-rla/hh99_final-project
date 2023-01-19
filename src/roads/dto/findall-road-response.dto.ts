@@ -2,6 +2,12 @@ import { ApiProperty } from '@nestjs/swagger';
 
 class RoadDataDto {
   @ApiProperty({
+    example: '여의도',
+    description: '지역 이름',
+  })
+  readonly 'AREA_NM': string;
+
+  @ApiProperty({
     example: '해당 장소로 이동·진입시 시간이 오래 걸릴 수 있어요.',
     description: '전체도로소통평균현황 메세지',
   })
@@ -24,12 +30,6 @@ class RoadDataDto {
     description: '전체도로소통평균속도',
   })
   readonly 'ROAD_TRAFFIC_SPD': number;
-
-  @ApiProperty({
-    example: '여의도',
-    description: '지역 이름',
-  })
-  readonly 'AREA_NM': string;
 }
 
 export class FindAllRoadDto {
