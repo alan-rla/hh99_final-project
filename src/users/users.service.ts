@@ -12,14 +12,14 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string) {
-    return this.usersRepository.findOne({
+    return this.usersRepository.findAndCount({
       where: { email },
       select: ['id', 'email'],
     });
   }
 
   async findByNickname(nickname: string) {
-    return this.usersRepository.findOne({
+    return this.usersRepository.findAndCount({
       where: { nickname },
       select: ['id', 'nickname'],
     });

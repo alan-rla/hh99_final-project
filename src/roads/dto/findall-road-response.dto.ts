@@ -1,28 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FindAllRoadDto {
-  readonly 'SeoulRtd.citydata': SeoulRtdDto;
-}
-
-export class SeoulRtdDto {
-  readonly 'CITYDATA': CityDataDto;
-}
-
-export class CityDataDto {
-  readonly 'LIVE_PPLTN_STTS': object;
-  readonly 'ROAD_TRAFFIC_STTS': RoadTrafficDto;
-  readonly 'SUB_STTS': object;
-  readonly 'BUS_STN_STTS': object;
-  readonly 'WEATHER_STTS': object;
-  readonly 'COVID_19_STTS': object;
-}
-
-export class RoadTrafficDto {
-  readonly 'AVG_ROAD_DATA': RoadDataDto;
-  readonly 'ROAD_TRAFFIC_STTS': Array<RoadStatusDto>;
-}
-
-export class RoadDataDto {
+class RoadDataDto {
   @ApiProperty({
     example: '해당 장소로 이동·진입시 시간이 오래 걸릴 수 있어요.',
     description: '전체도로소통평균현황 메세지',
@@ -46,9 +24,22 @@ export class RoadDataDto {
     description: '전체도로소통평균속도',
   })
   readonly 'ROAD_TRAFFIC_SPD': number;
+
+  @ApiProperty({
+    example: '여의도',
+    description: '지역 이름',
+  })
+  readonly 'AREA_NM': string;
 }
 
-export class RoadStatusDto {
+export class FindAllRoadDto {
+  @ApiProperty({
+    type: [RoadDataDto],
+    description: '50개 지역 도로 정보 요약',
+  })
+  readonly 'result': object[];
+}
+class RoadStatusDto {
   @ApiProperty({
     example: 1220003302,
     description: '도로구간 LINK ID',
@@ -121,4 +112,12 @@ export class RoadStatusDto {
     description: '링크아이디 좌표(보간점)',
   })
   readonly 'XYLIST': string;
+}
+
+export class FindRoadsDto {
+  @ApiProperty({
+    type: [RoadStatusDto],
+    description: '1개 지역 도로 상세 정보',
+  })
+  readonly 'result': object[];
 }
