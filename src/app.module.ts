@@ -19,6 +19,7 @@ import { RoadsModule } from './roads/roads.module';
 import { PopulationModule } from './population/population.module';
 import { AreaModule } from './area/area.module';
 import * as redisStore from 'cache-manager-ioredis';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import * as redisStore from 'cache-manager-ioredis';
       host: '127.0.0.1',
       port: 6379,
     }),
+    ScheduleModule.forRoot(),
     PopulationModule,
     RoadsModule,
     BusModule,
