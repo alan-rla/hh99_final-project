@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { PopulationService } from './population.service';
 import { CreatePopulationDto } from './dto/create-population.dto';
 import { UpdatePopulationDto } from './dto/update-population.dto';
@@ -41,11 +41,11 @@ export class PopulationController {
     return await this.populationService.findAll();
   }
   //지역 상세조회
-  // @Get('/place/:placeId')
-  // async find(@Param('placeId') placeId: string) {
-  //   console.log('placeId: ', placeId);
-  //   return await this.populationService.find(placeId);
-  // }
+  @Get('/population/:placeId')
+  async find(@Param('placeId') placeId: string) {
+    console.log('placeId: ', placeId);
+    return await this.populationService.find(placeId);
+  }
 }
 
 // }
