@@ -36,7 +36,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       store: redisStore,
       host: '127.0.0.1',
       port: 6379,
-      ttl: 6000,
+      ttl: 600,
     }),
     ScheduleModule.forRoot(),
     PopulationModule,

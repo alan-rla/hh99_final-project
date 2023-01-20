@@ -31,7 +31,7 @@ export class RoadsController {
     await this.roadsService.saveRoadData();
 
     // 이후 5분마다 한번씩 도로데이터 저장
-    const saveData = new CronJob('0 */5 * * *', () => {
+    const saveData = new CronJob('0 */5 * * * *', () => {
       this.roadsService.saveRoadData();
     });
     this.schedulerRegistry.addCronJob('save data', saveData);

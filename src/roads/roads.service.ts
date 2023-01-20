@@ -21,19 +21,32 @@ export class RoadsService {
       const stream = this.httpService.get(encodeURI(url));
       const rawData = await lastValueFrom(stream);
 
-      const data: FindAllRoadDto = JSON.parse(
+      const output: FindAllRoadDto = JSON.parse(
         convert.xml2json(rawData.data, {
           compact: true,
           spaces: 2,
           textFn: removeJsonTextAttribute,
         }),
-      )['SeoulRtd.citydata']['CITYDATA']['ROAD_TRAFFIC_STTS'];
+      );
 
-      const avgRoadData = {
-        AREA_NM: area['AREA_NM'],
-        ...data['AVG_ROAD_DATA'],
-      };
-      const roadTrafficStts = data['ROAD_TRAFFIC_STTS'];
+      let avgRoadData: object;
+      let roadTrafficStts: object;
+      if (!output['SeoulRtd.citydata']) {
+        avgRoadData = {
+          에러: '서울시 실시간 도시데이터 API에 재요청 중입니다.',
+        };
+        roadTrafficStts = {
+          에러: '서울시 실시간 도시데이터 API에 재요청 중입니다.',
+        };
+      } else {
+        const data =
+          output['SeoulRtd.citydata']['CITYDATA']['ROAD_TRAFFIC_STTS'];
+        avgRoadData = {
+          AREA_NM: area['AREA_NM'],
+          ...data['AVG_ROAD_DATA'],
+        };
+        roadTrafficStts = data['ROAD_TRAFFIC_STTS'];
+      }
 
       await this.cacheManager.set(
         `ROAD_AVG_${area['AREA_NM']}`,
@@ -44,6 +57,7 @@ export class RoadsService {
         `ROAD_TRAFFIC_${area['AREA_NM']}`,
         JSON.stringify(roadTrafficStts),
       );
+      console.log(`${area['AREA_NM']} 정보 저장 완료!`);
     }
   }
 
