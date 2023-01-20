@@ -57,7 +57,6 @@ export class RoadsService {
         `ROAD_TRAFFIC_${area['AREA_NM']}`,
         JSON.stringify(roadTrafficStts),
       );
-      console.log(`${area['AREA_NM']} 정보 저장 완료!`);
     }
   }
 
