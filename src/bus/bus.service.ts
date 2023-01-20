@@ -31,12 +31,9 @@ export class BusService {
           spaces: 2,
           textFn: removeJsonTextAttribute,
         }),
-      )['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS.BUS_STN_STTS;
+      )['SeoulRtd.citydata'].CITYDATA.BUS_STN_STTS;
 
-      const busData = {
-        AREA_NM: area['AREA_NM'],
-        ...data,
-      };
+      const busData = data['BUS_STN_STTS'];
 
       await this.cacheManager.set(
         `BUS_${area['AREA_NM']}`,
