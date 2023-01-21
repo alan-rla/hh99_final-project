@@ -21,16 +21,15 @@ export class BusController {
   ) {}
 
   @ApiOperation({ summary: '50개 지역 버스 요약 정보 REDIS 저장' })
-  @Timeout(0)
-  async saveBusData() {
-    await this.busService.saveBusData();
-    const saveData = new CronJob('0 */5 * * *', () => {
-      this.busService.saveBusData();
-    });
-    this.schedulerRegistry.addCronJob('save data', saveData);
-    saveData.start();
-  }
-
+  // @Timeout(0)
+  // async saveBusData() {
+  //   await this.busService.saveBusData();
+  //   const saveData = new CronJob('0 */5 * * *', () => {
+  //     this.busService.saveBusData();
+  //   });
+  //   this.schedulerRegistry.addCronJob('save data', saveData);
+  //   saveData.start();
+  // }
   @ApiOperation({
     summary: '장소이름/bus',
     description: '버스 정보 전체 조회',

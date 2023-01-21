@@ -16,18 +16,18 @@ export class PopulationController {
   ) {}
   //50개 지역 캐싱
   @ApiOperation({ summary: '50개 지역 인구데이터 레디스 캐싱' })
-  @Timeout(0)
-  async saveAll() {
-    //서버시작 할때 데이터 캐싱
-    await this.populationService.saveAll();
+  // @Timeout(0)
+  // async saveAll() {
+  //   //서버시작 할때 데이터 캐싱
+  //   await this.populationService.saveAll();
 
-    //이후 5분마다 데이터 업데이트
-    const updateData = new CronJob('0 */5 * * *', () => {
-      this.populationService.saveAll();
-    });
-    this.schedulerRegistry.addCronJob('update data', updateData);
-    updateData.start();
-  }
+  //   //이후 5분마다 데이터 업데이트
+  //   const updateData = new CronJob('0 */5 * * *', () => {
+  //     this.populationService.saveAll();
+  //   });
+  //   this.schedulerRegistry.addCronJob('update data', updateData);
+  //   updateData.start();
+  // }
 
   //50개 지역 전체 조회
   @ApiResponse({
