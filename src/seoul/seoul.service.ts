@@ -101,16 +101,12 @@ export class SeoulService {
         // 지역 도로 정보 상세
         const roadTrafficStts =
           output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
-        console.log(typeof roadTrafficStts);
 
         //   버스 정보 전체
         let busData = {};
-        if (output['BUS_STN_STTS']) {
+        if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
           busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
-        } else {
-          busData = '';
         }
-        console.log(typeof busData);
 
         const cacheList = [
           this.saveAreaPopData(AREA_NM, areaPopData),
