@@ -76,46 +76,50 @@ export class SeoulService {
 
   async dataCache(rawDatas) {
     await Promise.all(rawDatas).then(rawDatas => {
-      for (const rawData of rawDatas) {
-        const output = JSON.parse(
-          convert.xml2json(rawData.data, {
-            compact: true,
-            spaces: 2,
-            textFn: removeJsonTextAttribute,
-          }),
-        )['SeoulRtd.citydata']['CITYDATA'];
-        // 지역 이름
-        const AREA_NM = output['AREA_NM'];
-        // 인구 정보
-        const areaPopData = {
-          AREA_NM: AREA_NM,
-          ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
-        };
+      try {
+        for (const rawData of rawDatas) {
+          const output = JSON.parse(
+            convert.xml2json(rawData.data, {
+              compact: true,
+              spaces: 2,
+              textFn: removeJsonTextAttribute,
+            }),
+          )['SeoulRtd.citydata']['CITYDATA'];
+          // 지역 이름
+          const AREA_NM = output['AREA_NM'];
+          // 인구 정보
+          const areaPopData = {
+            AREA_NM: AREA_NM,
+            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+          };
 
-        // 지역 도로 정보 요약
-        const avgRoadData = {
-          AREA_NM: AREA_NM,
-          ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
-        };
+          // 지역 도로 정보 요약
+          const avgRoadData = {
+            AREA_NM: AREA_NM,
+            ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
+          };
 
-        // 지역 도로 정보 상세
-        const roadTrafficStts =
-          output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+          // 지역 도로 정보 상세
+          const roadTrafficStts =
+            output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
 
-        //   버스 정보 전체
-        let busData = {};
-        if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
-          busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+          //   버스 정보 전체
+          let busData = {};
+          if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
+            busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+          }
+
+          const cacheList = [
+            this.saveAreaPopData(AREA_NM, areaPopData),
+            this.saveAvgRoadData(AREA_NM, avgRoadData),
+            this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
+            this.saveBusData(AREA_NM, busData),
+          ];
+          Promise.all(cacheList);
+          console.log(`${AREA_NM} 정보 저장 완료!`);
         }
-
-        const cacheList = [
-          this.saveAreaPopData(AREA_NM, areaPopData),
-          this.saveAvgRoadData(AREA_NM, avgRoadData),
-          this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
-          this.saveBusData(AREA_NM, busData),
-        ];
-        Promise.all(cacheList);
-        console.log(`${AREA_NM} 정보 저장 완료!`);
+      } catch (err) {
+        console.log(err);
       }
     });
   }
