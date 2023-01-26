@@ -32,7 +32,7 @@ class RoadDataDto {
   readonly 'ROAD_TRAFFIC_SPD': number;
 }
 
-export class FindAllRoadDto {
+export class FindAllRoadsDto {
   @ApiProperty({
     type: [RoadDataDto],
     description: '50개 지역 도로 정보 요약',

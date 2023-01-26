@@ -1,10 +1,16 @@
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  HttpException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import { Cache } from 'cache-manager';
 import convert from 'xml-js';
 import areaList from '../common/area-list';
 import removeJsonTextAttribute from '../common/functions/xml.value.converter';
+import { PlaceIdRequestDto } from './dto/placeId-request.dto';
 
 @Injectable()
 export class SeoulService {
@@ -95,14 +101,22 @@ export class SeoulService {
         // 지역 도로 정보 상세
         const roadTrafficStts =
           output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+        console.log(typeof roadTrafficStts);
+
         //   버스 정보 전체
-        const busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+        let busData = {};
+        if (output['BUS_STN_STTS']) {
+          busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+        } else {
+          busData = '';
+        }
+        console.log(typeof busData);
 
         const cacheList = [
           this.saveAreaPopData(AREA_NM, areaPopData),
           this.saveAvgRoadData(AREA_NM, avgRoadData),
           this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
-          // this.saveBusData(AREA_NM, busData),
+          this.saveBusData(AREA_NM, busData),
         ];
         Promise.all(cacheList);
         console.log(`${AREA_NM} 정보 저장 완료!`);
@@ -111,19 +125,97 @@ export class SeoulService {
   }
 
   async saveSeoulData() {
-    for (let i = 0; i < areaList.length; i += 5) {
+    for (let i = 0; i < areaList.length; i += 25) {
       const urls = [];
       for (let j = i; j < i + 5; j++) {
         urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.ROAD_API_KEY}/xml/citydata/1/50/${areaList[j]['AREA_NM']}`,
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_1}/xml/citydata/1/50/${areaList[j]['AREA_NM']}`,
         );
       }
-      console.log(urls);
+      for (let k = i + 5; k < i + 10; k++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_2}/xml/citydata/1/50/${areaList[k]['AREA_NM']}`,
+        );
+      }
+      for (let l = i + 10; l < i + 15; l++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_3}/xml/citydata/1/50/${areaList[l]['AREA_NM']}`,
+        );
+      }
+      for (let m = i + 15; m < i + 20; m++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_4}/xml/citydata/1/50/${areaList[m]['AREA_NM']}`,
+        );
+      }
+      for (let n = i + 20; n < i + 25; n++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
+        );
+      }
+
       const rawDatas = await this.getMultipleDatas(urls);
       await this.dataCache(rawDatas).catch(msg => {
         console.log(msg);
         return this.dataCache(rawDatas);
       });
     }
+  }
+
+  async findAllPop() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`POPULATION_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    return result;
+  }
+
+  async findAllRoads() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`ROAD_AVG_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    return { result };
+  }
+
+  async findRoads(placeId: PlaceIdRequestDto) {
+    const result = JSON.parse(
+      await this.cacheManager.get(`ROAD_TRAFFIC_${placeId}`),
+    );
+    if (!result) throw new HttpException('wrong place name', 404);
+    else return { result };
+  }
+
+  async findAllBuses(placeId: PlaceIdRequestDto) {
+    const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
+
+    if (!data) {
+      throw new HttpException('null busData', 404);
+    }
+
+    for (const busData of data) {
+      delete busData.BUS_DETAIL;
+    }
+
+    return data;
+  }
+
+  async findBus(placeId: PlaceIdRequestDto, busId: number) {
+    const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
+
+    if (!data) {
+      throw new HttpException('null busData', 404);
+    }
+
+    const resultData = data.find((obj: any) => obj.BUS_STN_ID === busId);
+
+    if (!resultData) throw new HttpException('wrong busId', 404);
+
+    return resultData;
   }
 }

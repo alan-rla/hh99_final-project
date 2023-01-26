@@ -1,13 +1,11 @@
-import { Controller, Get, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { Timeout, SchedulerRegistry } from '@nestjs/schedule';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiCreatedResponse,
-  ApiParam,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CronJob } from 'cron';
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
+import { PlaceIdRequestDto } from './dto/placeId-request.dto';
+import { PopulationDto } from './dto/population.dto';
+import { FindAllRoadsDto, FindRoadsDto } from './dto/road.dto';
 import { SeoulService } from './seoul.service';
 
 @ApiTags('SEOUL REAL TIME DATA')
@@ -32,5 +30,51 @@ export class SeoulController {
     // });
     // this.schedulerRegistry.addCronJob('save data', saveData);
     // saveData.start();
+  }
+
+  @ApiResponse({
+    type: PopulationDto,
+    status: 200,
+    description: '인구 정보 전체 조회',
+  })
+  @ApiOperation({ summary: '인구 정보 전체 조회' })
+  @Get('/population')
+  async findAllPop() {
+    this.seoulService.findAllPop();
+  }
+
+  @ApiResponse({
+    type: FindAllRoadsDto,
+    status: 200,
+    description: '도로 정보 전체 조회',
+  })
+  @ApiOperation({ summary: '도로 정보 전체 조회' })
+  @Get('/roads')
+  async findAllRoads() {
+    this.seoulService.findAllRoads();
+  }
+
+  @ApiResponse({
+    type: FindRoadsDto,
+    status: 200,
+    description: '도로 정보 전체 조회',
+  })
+  @ApiOperation({ summary: '도로 정보 전체 조회' })
+  @Get(':placeId/roads')
+  async findRoads(@Param('placeId') placeId: PlaceIdRequestDto) {
+    this.seoulService.findRoads(placeId);
+  }
+
+  @Get('/:placeId/bus')
+  async findAllBuses(@Param('placeId') placeId: PlaceIdRequestDto) {
+    this.seoulService.findAllBuses(placeId);
+  }
+
+  @Get('/:placeId/bus/:busId')
+  async findBus(
+    @Param('placeId') placeId: PlaceIdRequestDto,
+    @Param('busId') busId: number,
+  ) {
+    this.seoulService.findBus(placeId, +busId);
   }
 }
