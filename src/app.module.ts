@@ -1,6 +1,5 @@
 import {
   CacheModule,
-  CacheStore,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -14,12 +13,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmConfigModule } from './config/config.module';
 import { TypeOrmConfigService } from './config/config.service';
 import { AuthModule } from './auth/auth.module';
-import { BusModule } from './bus/bus.module';
-import { RoadsModule } from './roads/roads.module';
-import { PopulationModule } from './population/population.module';
 import { AreaModule } from './area/area.module';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SeoulModule } from './seoul/seoul.module';
 
 @Module({
   imports: [
@@ -39,11 +36,8 @@ import { ScheduleModule } from '@nestjs/schedule';
       ttl: 600,
     }),
     ScheduleModule.forRoot(),
-    PopulationModule,
-    RoadsModule,
-    BusModule,
     AreaModule,
-    ScheduleModule.forRoot(),
+    SeoulModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
