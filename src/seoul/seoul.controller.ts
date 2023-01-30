@@ -17,7 +17,7 @@ export class SeoulController {
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  @ApiOperation({ summary: '50개 지역 버스 요약 정보 REDIS 저장' })
+  @ApiOperation({ summary: '50개 지역 정보 REDIS 저장' })
   @Timeout(0)
   async saveSeoulData() {
     // 서버 시작할때 도로 데이터 한번 저장
