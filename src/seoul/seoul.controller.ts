@@ -76,4 +76,24 @@ export class SeoulController {
   ) {
     return this.seoulService.findBus(placeId, +busId);
   }
+
+  @ApiResponse({
+    status: 200,
+    description: '날씨 정보 전체 조회',
+  })
+  @ApiOperation({ summary: '날씨 정보 전체 조회' })
+  @Get('/weather')
+  async findAllWeather() {
+    return this.seoulService.findAllWeather();
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: '지역 날씨 정보 조회',
+  })
+  @ApiOperation({ summary: '지역 날씨 정보 조회' })
+  @Get('/:placeId/weather')
+  async findOneWeather(@Param('placeId') placeId: PlaceIdRequestDto) {
+    return this.seoulService.findOneWeather(placeId);
+  }
 }

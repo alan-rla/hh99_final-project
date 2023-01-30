@@ -46,6 +46,17 @@ export class SeoulService {
     );
   }
 
+  async saveAreaWeatherData(AREA_NM, areaWeatherData) {
+    await new Promise((resolve) =>
+      resolve(
+        this.cacheManager.set(
+          `WEATHER_${AREA_NM}`,
+          JSON.stringify(areaWeatherData),
+        ),
+      ),
+    );
+  }
+
   async saveAvgRoadData(AREA_NM, avgRoadData) {
     await new Promise((resolve) =>
       resolve(
@@ -93,6 +104,12 @@ export class SeoulService {
             ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
           };
 
+          // 날씨 정보
+          const areaWeatherData = {
+            AREA_NM: AREA_NM,
+            ...output['WEATHER_STTS']['WEATHER_STTS'],
+          };
+
           // 지역 도로 정보 요약
           const avgRoadData = {
             AREA_NM: AREA_NM,
@@ -112,6 +129,7 @@ export class SeoulService {
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
+            this.saveAreaWeatherData(AREA_NM, areaWeatherData),
             this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
             this.saveBusData(AREA_NM, busData),
           ];
@@ -172,6 +190,26 @@ export class SeoulService {
       result.push(data);
     }
     return result;
+  }
+
+  async findAllWeather() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    console.log('------result------', result);
+    return { result };
+  }
+
+  async findOneWeather(placeId: PlaceIdRequestDto) {
+    const result = JSON.parse(
+      await this.cacheManager.get(`WEATHER_${placeId}`),
+    );
+    if (!result) throw new HttpException('wrong place name', 404);
+    else return { result };
   }
 
   async findAllRoads() {
