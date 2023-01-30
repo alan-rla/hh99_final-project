@@ -39,7 +39,7 @@ export class SeoulController {
   @ApiOperation({ summary: '인구 정보 전체 조회' })
   @Get('/population')
   async findAllPop() {
-    this.seoulService.findAllPop();
+    return this.seoulService.findAllPop();
   }
 
   @ApiResponse({
@@ -50,7 +50,7 @@ export class SeoulController {
   @ApiOperation({ summary: '도로 정보 전체 조회' })
   @Get('/roads')
   async findAllRoads() {
-    this.seoulService.findAllRoads();
+    return this.seoulService.findAllRoads();
   }
 
   @ApiResponse({
@@ -61,12 +61,12 @@ export class SeoulController {
   @ApiOperation({ summary: '도로 정보 전체 조회' })
   @Get(':placeId/roads')
   async findRoads(@Param('placeId') placeId: PlaceIdRequestDto) {
-    this.seoulService.findRoads(placeId);
+    return this.seoulService.findRoads(placeId);
   }
 
   @Get('/:placeId/bus')
   async findAllBuses(@Param('placeId') placeId: PlaceIdRequestDto) {
-    this.seoulService.findAllBuses(placeId);
+    return this.seoulService.findAllBuses(placeId);
   }
 
   @Get('/:placeId/bus/:busId')
@@ -74,6 +74,6 @@ export class SeoulController {
     @Param('placeId') placeId: PlaceIdRequestDto,
     @Param('busId') busId: number,
   ) {
-    this.seoulService.findBus(placeId, +busId);
+    return this.seoulService.findBus(placeId, +busId);
   }
 }
