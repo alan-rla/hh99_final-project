@@ -33,7 +33,7 @@ import { SeoulModule } from './seoul/seoul.module';
       store: redisStore,
       host: '127.0.0.1',
       port: 6379,
-      ttl: 600,
+      ttl: 43200,
     }),
     ScheduleModule.forRoot(),
     AreaModule,

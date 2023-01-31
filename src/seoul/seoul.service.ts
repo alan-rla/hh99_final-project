@@ -45,6 +45,22 @@ export class SeoulService {
       ),
     );
   }
+  // 인구 시간대 정보 cache set
+  async saveAreaPopPastData(AREA_NM: string, areaPopPastData: any[]) {
+    let currentData: object[] = [];
+    const cacheKey = `POPULATION_Past_${AREA_NM}`;
+    let cacheValue: string | undefined = await this.cacheManager.get(cacheKey);
+    if (cacheValue) {
+      // append new data to existing value
+      currentData = JSON.parse(cacheValue);
+      currentData = [currentData, areaPopPastData];
+
+      await this.cacheManager.set(cacheKey, JSON.stringify(currentData));
+    } else {
+      // save data for the first time
+      await this.cacheManager.set(cacheKey, JSON.stringify(areaPopPastData));
+    }
+  }
 
   async saveAreaWeatherData(AREA_NM, areaWeatherData) {
     await new Promise((resolve) =>
@@ -84,7 +100,53 @@ export class SeoulService {
       resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
     );
   }
+  //인구 시간대 정보 캐싱
+  async dataPopCache(rawDatas) {
+    const unixTime = Date.now();
+    const date = new Date(unixTime);
+    const time = date.toLocaleTimeString('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const formattedDate = `${date
+      .toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
+      .replace(/\//g, '-')}-${time}`;
+    console.log(formattedDate);
 
+    await Promise.all(rawDatas).then((rawDatas) => {
+      try {
+        for (const rawData of rawDatas) {
+          const output = JSON.parse(
+            convert.xml2json(rawData.data, {
+              compact: true,
+              spaces: 2,
+              textFn: removeJsonTextAttribute,
+            }),
+          )['SeoulRtd.citydata']['CITYDATA'];
+          // 지역 이름
+          const AREA_NM = output['AREA_NM'];
+          // 인구 정보
+          const areaPopPastData = {
+            AREA_NM: AREA_NM,
+            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+            CACHE_TIME: formattedDate,
+          };
+
+          const cacheList = [
+            this.saveAreaPopPastData(AREA_NM, areaPopPastData),
+          ];
+          Promise.all(cacheList);
+          console.log(`${AREA_NM} 시간대 정보 저장 완료!`);
+        }
+      } catch (err) {
+        console.log(err);
+        setTimeout(() => {
+          this.dataPopCache(rawDatas);
+        }, 10000);
+      }
+    });
+  }
   async dataCache(rawDatas) {
     await Promise.all(rawDatas).then(rawDatas => {
       try {
@@ -143,6 +205,42 @@ export class SeoulService {
       }
     });
   }
+  //인구 시간대별 정보 호출, 캐시 저장
+  async savePopPastData() {
+    for (let i = 0; i < areaList.length; i += 25) {
+      const urls = [];
+      for (let j = i; j < i + 5; j++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_1}/xml/citydata/1/50/${areaList[j]['AREA_NM']}`,
+        );
+      }
+      for (let k = i + 5; k < i + 10; k++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_2}/xml/citydata/1/50/${areaList[k]['AREA_NM']}`,
+        );
+      }
+      for (let l = i + 10; l < i + 15; l++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_3}/xml/citydata/1/50/${areaList[l]['AREA_NM']}`,
+        );
+      }
+      for (let m = i + 15; m < i + 20; m++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_4}/xml/citydata/1/50/${areaList[m]['AREA_NM']}`,
+        );
+      }
+      for (let n = i + 20; n < i + 25; n++) {
+        urls.push(
+          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
+        );
+      }
+      console.log('url', urls);
+
+      const rawDatas = await this.getMultipleDatas(urls);
+
+      await this.dataPopCache(rawDatas);
+    }
+  }
 
   async saveSeoulData() {
     for (let i = 0; i < areaList.length; i += 25) {
@@ -186,6 +284,16 @@ export class SeoulService {
       result.push(data);
     }
     return result;
+  }
+  // 12시간 전 인구수 조회
+  async findPastPop(placeId: PlaceIdRequestDto) {
+    const result: object[] = [];
+    const now = Date.now();
+
+    const cacheKey = `POPULATION_Past_${placeId}`;
+    const cacheValue = JSON.parse(await this.cacheManager.get(cacheKey));
+
+    return cacheValue;
   }
 
   async findAllWeather() {
