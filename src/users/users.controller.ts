@@ -28,6 +28,7 @@ import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Users } from 'src/entities/Users';
 import { LoginResponseDto } from './dto/login-response.dto';
+import { SearchUserDto } from './dto/search-user.dto';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('USERS')
@@ -45,10 +46,8 @@ export class UsersController {
   @Post()
   async registerUser(@Body() data: CreateUserDto) {
     // 이메일, 닉네임 이미 존재하는지 확인
-    const email = await this.usersService.findByEmail(data.email);
-    const nickname = await this.usersService.findByNickname(data.nickname);
-    if (email || nickname)
-      throw new HttpException('이메일 또는 닉네임 이미 존재', 409);
+    const user = await this.usersService.findUser(data.email, data.nickname);
+    if (user[1]) throw new HttpException('이메일 또는 닉네임 이미 존재', 409);
 
     // 비밀번호 확인 검증
     if (data.password !== data.confirmPW)
@@ -91,6 +90,28 @@ export class UsersController {
   @ApiOperation({ summary: '내 정보 조회' })
   @Get()
   getUser(@User() user: Users) {
-    return user || false;
+    return user || '로그인 필요';
+  }
+
+  @ApiOperation({ summary: '유저 검색' })
+  @Post('friend')
+  async searchFriend(@Body() data: SearchUserDto) {
+    const result = await this.usersService.searchFriend(data.nickname);
+    return result;
+  }
+
+  @ApiCookieAuth('connect.sid')
+  @ApiOperation({ summary: '검색한 유저 친구 등록' })
+  @Post('friend/:friendId')
+  async addFriend(@User() user: Users, @Param('friendId') friendId: number) {
+    if (!user) return '로그인 필요';
+    if (user.id === +friendId)
+      throw new HttpException('자기 자신 친구 추가 불가', 403);
+
+    const result = await this.usersService.addFriend(user.id, +friendId);
+
+    if (result) {
+      return '친구 추가 성공';
+    }
   }
 }
