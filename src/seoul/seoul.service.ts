@@ -28,7 +28,7 @@ export class SeoulService {
     const rawDatas = [];
     for (const stream of streams) {
       rawDatas.push(
-        await new Promise((resolve) => resolve(lastValueFrom(stream))),
+        await new Promise(resolve => resolve(lastValueFrom(stream))),
       );
     }
 
@@ -36,7 +36,7 @@ export class SeoulService {
   }
 
   async saveAreaPopData(AREA_NM, areaPopData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `POPULATION_${AREA_NM}`,
@@ -62,8 +62,19 @@ export class SeoulService {
     }
   }
 
-  async saveAvgRoadData(AREA_NM, avgRoadData) {
+  async saveAreaWeatherData(AREA_NM, areaWeatherData) {
     await new Promise((resolve) =>
+      resolve(
+        this.cacheManager.set(
+          `WEATHER_${AREA_NM}`,
+          JSON.stringify(areaWeatherData),
+        ),
+      ),
+    );
+  }
+
+  async saveAvgRoadData(AREA_NM, avgRoadData) {
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `ROAD_AVG_${AREA_NM}`,
@@ -74,7 +85,7 @@ export class SeoulService {
   }
 
   async saveRoadTrafficStts(AREA_NM, roadTrafficStts) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `ROAD_TRAFFIC_${AREA_NM}`,
@@ -85,7 +96,7 @@ export class SeoulService {
   }
 
   async saveBusData(AREA_NM, busData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
     );
   }
@@ -137,7 +148,7 @@ export class SeoulService {
     });
   }
   async dataCache(rawDatas) {
-    await Promise.all(rawDatas).then((rawDatas) => {
+    await Promise.all(rawDatas).then(rawDatas => {
       try {
         for (const rawData of rawDatas) {
           const output = JSON.parse(
@@ -153,6 +164,12 @@ export class SeoulService {
           const areaPopData = {
             AREA_NM: AREA_NM,
             ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+          };
+
+          // 날씨 정보
+          const areaWeatherData = {
+            AREA_NM: AREA_NM,
+            ...output['WEATHER_STTS']['WEATHER_STTS'],
           };
 
           // 지역 도로 정보 요약
@@ -174,11 +191,11 @@ export class SeoulService {
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
+            this.saveAreaWeatherData(AREA_NM, areaWeatherData),
             this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
             this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
-          console.log(`${AREA_NM} 정보 저장 완료!`);
         }
       } catch (err) {
         console.log(err);
@@ -253,10 +270,7 @@ export class SeoulService {
           `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
         );
       }
-      console.log('url', urls);
-
       const rawDatas = await this.getMultipleDatas(urls);
-
       await this.dataCache(rawDatas);
     }
   }
@@ -280,6 +294,26 @@ export class SeoulService {
     const cacheValue = JSON.parse(await this.cacheManager.get(cacheKey));
 
     return cacheValue;
+  }
+
+  async findAllWeather() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    console.log('------result------', result);
+    return { result };
+  }
+
+  async findOneWeather(placeId: PlaceIdRequestDto) {
+    const result = JSON.parse(
+      await this.cacheManager.get(`WEATHER_${placeId}`),
+    );
+    if (!result) throw new HttpException('wrong place name', 404);
+    else return { result };
   }
 
   async findAllRoads() {
