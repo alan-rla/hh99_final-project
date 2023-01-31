@@ -25,7 +25,7 @@ export class User_Like {
   })
   @JoinColumn([
     {
-      name: 'id',
+      name: 'user_id',
       referencedColumnName: 'id',
     },
   ])
