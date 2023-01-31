@@ -91,6 +91,18 @@ export class SeoulService {
   }
   //인구 시간대 정보 캐싱
   async dataPopCache(rawDatas) {
+    const unixTime = Date.now();
+    const date = new Date(unixTime);
+    const time = date.toLocaleTimeString('ko-KR', {
+      timeZone: 'Asia/Seoul',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    const formattedDate = `${date
+      .toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
+      .replace(/\//g, '-')}-${time}`;
+    console.log(formattedDate);
+
     await Promise.all(rawDatas).then((rawDatas) => {
       try {
         for (const rawData of rawDatas) {
@@ -107,7 +119,7 @@ export class SeoulService {
           const areaPopPastData = {
             AREA_NM: AREA_NM,
             ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
-            TIME: Date.now(),
+            CACHE_TIME: formattedDate,
           };
 
           const cacheList = [
