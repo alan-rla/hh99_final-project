@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Friends } from './Friends';
 
 @Index('email', ['email'], { unique: true })
 @Entity({ schema: 'hh99_final-project', name: 'users' })
@@ -34,4 +35,10 @@ export class Users {
 
   @DeleteDateColumn()
   deletedAt: Date | null;
+
+  @OneToMany(() => Friends, friends => friends.User)
+  Friend1: Friends[];
+
+  @OneToMany(() => Friends, friends => friends.Friend)
+  Friend2: Friends[];
 }

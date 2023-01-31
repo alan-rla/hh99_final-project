@@ -28,7 +28,7 @@ export class SeoulService {
     const rawDatas = [];
     for (const stream of streams) {
       rawDatas.push(
-        await new Promise((resolve) => resolve(lastValueFrom(stream))),
+        await new Promise(resolve => resolve(lastValueFrom(stream))),
       );
     }
 
@@ -36,7 +36,7 @@ export class SeoulService {
   }
 
   async saveAreaPopData(AREA_NM, areaPopData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `POPULATION_${AREA_NM}`,
@@ -47,7 +47,7 @@ export class SeoulService {
   }
 
   async saveAvgRoadData(AREA_NM, avgRoadData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `ROAD_AVG_${AREA_NM}`,
@@ -58,7 +58,7 @@ export class SeoulService {
   }
 
   async saveRoadTrafficStts(AREA_NM, roadTrafficStts) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `ROAD_TRAFFIC_${AREA_NM}`,
@@ -69,13 +69,13 @@ export class SeoulService {
   }
 
   async saveBusData(AREA_NM, busData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
     );
   }
 
   async dataCache(rawDatas) {
-    await Promise.all(rawDatas).then((rawDatas) => {
+    await Promise.all(rawDatas).then(rawDatas => {
       try {
         for (const rawData of rawDatas) {
           const output = JSON.parse(
@@ -116,7 +116,6 @@ export class SeoulService {
             this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
-          console.log(`${AREA_NM} 정보 저장 완료!`);
         }
       } catch (err) {
         console.log(err);
@@ -155,10 +154,7 @@ export class SeoulService {
           `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
         );
       }
-      console.log('url', urls);
-
       const rawDatas = await this.getMultipleDatas(urls);
-
       await this.dataCache(rawDatas);
     }
   }
