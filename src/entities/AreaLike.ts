@@ -7,8 +7,8 @@ export class AreaLike {
   @Column('int', { name: 'AreaLikeId', primary: true })
   areaLike_id: number;
 
-  @Column('string', { name: 'AREA_NM' })
-  AREAN_NM: string;
+  @Column('varchar', { name: 'AREA_NM' })
+  AREA_NM: string;
   @Column('double', { name: 'LNG' })
   LNG: number;
   @Column('double', { name: 'LAT' })
