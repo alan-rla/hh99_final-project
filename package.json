@@ -20,6 +20,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node --require tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "db:create": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js db:create -d ./dataSource.ts",
     "db:drop": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js db:drop -d ./dataSource.ts",
     "seed": "ts-node ./node_modules/typeorm-extension/dist/cli/index.js seed -d ./dataSource.ts",
@@ -31,6 +32,7 @@
     "db:generate-migration": "npm run typeorm migration:generate -- ./src/migrations -d ./dataSource.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.261.0",
     "@nestjs/axios": "^1.0.1",
     "@nestjs/common": "^9.2.1",
     "@nestjs/config": "^2.2.0",
@@ -49,6 +51,7 @@
     "cookie-parser": "^1.4.6",
     "cross-env": "^7.0.3",
     "express-session": "^1.17.3",
+    "multer-s3": "^3.0.1",
     "mysql2": "^2.3.3",
     "passport": "^0.6.0",
     "passport-local": "^1.0.0",
@@ -71,6 +74,7 @@
     "@types/express": "^4.17.13",
     "@types/express-session": "^1.17.5",
     "@types/jest": "29.2.4",
+    "@types/multer-s3": "^3.0.0",
     "@types/node": "18.11.18",
     "@types/passport": "^1.0.11",
     "@types/supertest": "^2.0.11",

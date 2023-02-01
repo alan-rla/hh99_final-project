@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Response,
   UseInterceptors,
   ForbiddenException,
   UseGuards,
   HttpException,
+  UploadedFile,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UndefinedToNullInterceptor } from 'src/common/interceptors/undefinedToNull.interceptor';
@@ -28,7 +30,10 @@ import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
 import { Users } from 'src/entities/Users';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { SearchUserDto } from './dto/search-user.dto';
+import { SearchUserDto, SearchUserResponseDto } from './dto/search-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
 
 @UseInterceptors(UndefinedToNullInterceptor)
 @ApiTags('USERS')
@@ -45,15 +50,11 @@ export class UsersController {
   @UseGuards(new NotLoggedInGuard())
   @Post()
   async registerUser(@Body() data: CreateUserDto) {
-    // 이메일, 닉네임 이미 존재하는지 확인
-    const user = await this.usersService.findUser(data.email, data.nickname);
-    if (user[1]) throw new HttpException('이메일 또는 닉네임 이미 존재', 409);
-
     // 비밀번호 확인 검증
     if (data.password !== data.confirmPW)
       throw new HttpException('비밀번호 확인 불일치', 409);
 
-    const result = this.usersService.registerUser(
+    const result = await this.usersService.registerUser(
       data.email,
       data.nickname,
       data.password,
@@ -89,10 +90,63 @@ export class UsersController {
   @ApiCookieAuth('connect.sid')
   @ApiOperation({ summary: '내 정보 조회' })
   @Get()
-  getUser(@User() user: Users) {
+  async getUser(@User() user: Users) {
     return user || '로그인 필요';
   }
 
+  @ApiBody({
+    type: UpdateUserDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: '내 정보 수정 성공',
+  })
+  @ApiCookieAuth('connect.sid')
+  @ApiOperation({ summary: '내 정보 수정' })
+  @UseInterceptors(FileInterceptor('file'))
+  @Patch('update')
+  async updateUser(
+    @User() user: Users,
+    @Body() data: UpdateUserDto,
+    @UploadedFile() file?: Express.MulterS3.File,
+  ) {
+    if (!user) return '로그인 필요';
+    const result = await this.usersService.updateUser(
+      user.id,
+      user.nickname,
+      data,
+      file,
+    );
+
+    if (result) {
+      return '유저 정보 수정 성공';
+    } else {
+      throw new ForbiddenException();
+    }
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: '회원 탈퇴 완료',
+  })
+  @ApiCookieAuth('connect.sid')
+  @UseGuards(LoggedInGuard)
+  @ApiOperation({ summary: '회원 탈퇴' })
+  @Delete()
+  async deleteUser(@User() user: Users, @Response() res) {
+    await this.usersService.deleteUser(user.id);
+    res.clearCookie('connect.sid', { httpOnly: true });
+    return '회원 탈퇴 완료';
+  }
+
+  @ApiBody({
+    type: SearchUserDto,
+  })
+  @ApiResponse({
+    type: SearchUserResponseDto,
+    status: 200,
+    description: '유저 검색 성공',
+  })
   @ApiOperation({ summary: '유저 검색' })
   @Post('friend')
   async searchFriend(@Body() data: SearchUserDto) {
@@ -100,7 +154,12 @@ export class UsersController {
     return result;
   }
 
+  @ApiResponse({
+    status: 200,
+    description: '친구 추가 성공',
+  })
   @ApiCookieAuth('connect.sid')
+  @UseGuards(LoggedInGuard)
   @ApiOperation({ summary: '검색한 유저 친구 등록' })
   @Post('friend/:friendId')
   async addFriend(@User() user: Users, @Param('friendId') friendId: number) {
@@ -112,6 +171,8 @@ export class UsersController {
 
     if (result) {
       return '친구 추가 성공';
+    } else {
+      throw new ForbiddenException();
     }
   }
 }
