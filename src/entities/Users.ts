@@ -37,12 +37,12 @@ export class Users {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-  @OneToMany(() => Friends, (friends) => friends.User)
+  @OneToMany(() => Friends, friends => friends.User)
   Friend1: Friends[];
 
-  @OneToMany(() => Friends, (friends) => friends.Friend)
+  @OneToMany(() => Friends, friends => friends.Friend)
   Friend2: Friends[];
 
-  @OneToMany(() => User_Like, (user_like) => user_like.User)
+  @OneToMany(() => User_Like, user_like => user_like.User)
   UserLike: User_Like[];
 }

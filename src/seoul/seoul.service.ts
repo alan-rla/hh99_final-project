@@ -49,7 +49,9 @@ export class SeoulService {
   async saveAreaPopPastData(AREA_NM: string, areaPopPastData: any[]) {
     let currentData: object[] = [];
     const cacheKey = `POPULATION_Past_${AREA_NM}`;
-    let cacheValue: string | undefined = await this.cacheManager.get(cacheKey);
+    const cacheValue: string | undefined = await this.cacheManager.get(
+      cacheKey,
+    );
     if (cacheValue) {
       // append new data to existing value
       currentData = JSON.parse(cacheValue);
@@ -63,7 +65,7 @@ export class SeoulService {
   }
 
   async saveAreaWeatherData(AREA_NM, areaWeatherData) {
-    await new Promise((resolve) =>
+    await new Promise(resolve =>
       resolve(
         this.cacheManager.set(
           `WEATHER_${AREA_NM}`,
@@ -114,7 +116,7 @@ export class SeoulService {
       .replace(/\//g, '-')}-${time}`;
     console.log(formattedDate);
 
-    await Promise.all(rawDatas).then((rawDatas) => {
+    await Promise.all(rawDatas).then(rawDatas => {
       try {
         for (const rawData of rawDatas) {
           const output = JSON.parse(
