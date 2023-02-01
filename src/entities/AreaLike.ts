@@ -1,10 +1,16 @@
-import { Column, Entity, Index, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { User_Like } from './User_Like';
 
 @Index('AREA_NM', ['AREA_NM'], {})
 @Entity({ schema: 'hh99_final-project', name: 'areaLike' })
 export class AreaLike {
-  @Column('int', { name: 'AreaLikeId', primary: true })
+  @PrimaryGeneratedColumn({ type: 'int' })
   areaLike_id: number;
 
   @Column('varchar', { name: 'AREA_NM' })
@@ -16,6 +22,6 @@ export class AreaLike {
   @Column('int', { name: 'likeCnt' })
   likeCnt: number;
 
-  @OneToMany(() => User_Like, (user_like) => user_like.Area)
+  @OneToMany(() => User_Like, user_like => user_like.Area)
   UserLike: User_Like[];
 }

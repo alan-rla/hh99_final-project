@@ -37,15 +37,17 @@ export class Users {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
+
   @Column('varchar', { name: 'profileImg', length: 255 })
   profileImg: string;
+
 
   @OneToMany(() => Friends, friends => friends.User)
   Friend1: Friends[];
 
-  @OneToMany(() => Friends, (friends) => friends.Friend)
+  @OneToMany(() => Friends, friends => friends.Friend)
   Friend2: Friends[];
 
-  @OneToMany(() => User_Like, (user_like) => user_like.User)
+  @OneToMany(() => User_Like, user_like => user_like.User)
   UserLike: User_Like[];
 }

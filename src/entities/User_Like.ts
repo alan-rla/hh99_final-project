@@ -1,13 +1,20 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { AreaLike } from './AreaLike';
 import { Users } from './Users';
 
 @Entity({ schema: 'hh99_final-project', name: 'user_like' })
 export class User_Like {
-  @Column('int', { name: 'user_like_id', primary: true })
+  @PrimaryGeneratedColumn({ type: 'int' })
   user_like_id: number;
 
-  @ManyToOne(() => AreaLike, (arealike) => arealike.UserLike, {
+  @ManyToOne(() => AreaLike, arealike => arealike.UserLike, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
@@ -19,7 +26,7 @@ export class User_Like {
   ])
   Area: AreaLike;
 
-  @ManyToOne(() => Users, (users) => users.UserLike, {
+  @ManyToOne(() => Users, users => users.UserLike, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
