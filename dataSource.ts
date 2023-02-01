@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
 import { Users } from './src/entities/Users';
+import { Friends } from 'src/entities/Friends';
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ const dataSource = new DataSource({
   charset: 'utf8_general_ci',
   synchronize: false,
   migrations: [__dirname + '/src/migrations/*.ts'],
-  entities: [Users],
+  entities: [Users, Friends],
 });
 
 export default dataSource;
