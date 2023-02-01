@@ -236,10 +236,7 @@ export class SeoulService {
           `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
         );
       }
-      console.log('url', urls);
-
       const rawDatas = await this.getMultipleDatas(urls);
-
       await this.dataPopCache(rawDatas);
     }
   }
