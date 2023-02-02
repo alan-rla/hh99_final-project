@@ -24,26 +24,26 @@ export class SeoulController {
     await this.seoulService.saveSeoulData();
 
     // 이후 5분마다 한번씩 도로데이터 저장
-    const saveData = new CronJob('0 */5 * * * *', () => {
+    const saveData = new CronJob('0 */10 * * * *', () => {
       this.seoulService.saveSeoulData();
     });
     this.schedulerRegistry.addCronJob('save data', saveData);
     saveData.start();
   }
 
-  @ApiOperation({ summary: '1시간마다 인구정보 REDIS 저장' })
-  @Timeout(0)
-  async savePopPastData() {
-    // 서버 시작할때 인구데이터 한번 저장
-    await this.seoulService.savePopPastData();
+  // @ApiOperation({ summary: '1시간마다 인구정보 REDIS 저장' })
+  // @Timeout(0)
+  // async savePopPastData() {
+  //   // 서버 시작할때 인구데이터 한번 저장
+  //   await this.seoulService.savePopPastData();
 
-    // 이후 1시간 마다 한번씩 도로데이터 저장
-    const savePopData = new CronJob('0 * * * *', () => {
-      this.seoulService.savePopPastData();
-    });
-    this.schedulerRegistry.addCronJob('save pop data', savePopData);
-    savePopData.start();
-  }
+  //   // 이후 1시간 마다 한번씩 도로데이터 저장
+  //   const savePopData = new CronJob('0 * * * *', () => {
+  //     this.seoulService.savePopPastData();
+  //   });
+  //   this.schedulerRegistry.addCronJob('save pop data', savePopData);
+  //   savePopData.start();
+  // }
 
   @ApiResponse({
     type: PopulationDto,
@@ -56,16 +56,16 @@ export class SeoulController {
     return this.seoulService.findAllPop();
   }
   // 12시간 전 시간대별 인구수 조회
-  @ApiResponse({
-    type: PopulationDto,
-    status: 200,
-    description: '12시간 전 인구수 조회 ',
-  })
-  @ApiOperation({ summary: '인구 정보 전체 조회' })
-  @Get(':placeId/population/past')
-  async findPastPop(@Param('placeId') placeId: PlaceIdRequestDto) {
-    return this.seoulService.findPastPop(placeId);
-  }
+  // @ApiResponse({
+  //   type: PopulationDto,
+  //   status: 200,
+  //   description: '12시간 전 인구수 조회 ',
+  // })
+  // @ApiOperation({ summary: '인구 정보 전체 조회' })
+  // @Get(':placeId/population/past')
+  // async findPastPop(@Param('placeId') placeId: PlaceIdRequestDto) {
+  //   return this.seoulService.findPastPop(placeId);
+  // }
 
   @ApiResponse({
     type: FindAllRoadsDto,

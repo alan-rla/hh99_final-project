@@ -13,6 +13,17 @@ export class FindAllAreaDto {
   readonly data: Array<AreaInfoDto>;
 }
 
+export class FindOneAreaDto {
+  @ApiProperty({
+    example: {
+      AREA_NM: '강남 MICE 관광특구',
+      LNG: 37.512219809865414,
+      LAT: 127.05898584858284,
+    },
+  })
+  readonly data: Array<AreaInfoDto>;
+}
+
 class AreaInfoDto {
   @ApiProperty({
     example: '동대문 관광특구',

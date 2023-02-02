@@ -31,11 +31,4 @@ export class UpdateUserDto {
     description: '비밀번호 확인',
   })
   public confirmPW: string;
-
-  @IsOptional()
-  @ApiProperty({
-    example: 'profileImg.jpg',
-    description: '프로필 사진',
-  })
-  public profileImg: File;
 }
