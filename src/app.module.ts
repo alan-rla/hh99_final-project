@@ -17,6 +17,7 @@ import { AreaModule } from './area/area.module';
 import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SeoulModule } from './seoul/seoul.module';
+import { RouteModule } from './route';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { SeoulModule } from './seoul/seoul.module';
     ScheduleModule.forRoot(),
     AreaModule,
     SeoulModule,
+    RouteModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
