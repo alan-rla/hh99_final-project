@@ -11,6 +11,8 @@ import convert from 'xml-js';
 import areaList from '../common/area-list';
 import removeJsonTextAttribute from '../common/functions/xml.value.converter';
 import { PlaceIdRequestDto } from './dto/placeId-request.dto';
+import dayjs from 'dayjs';
+import { PopulationDto } from './dto/population.dto';
 
 @Injectable()
 export class SeoulService {
@@ -44,24 +46,6 @@ export class SeoulService {
         ),
       ),
     );
-  }
-  // 인구 시간대 정보 cache set
-  async saveAreaPopPastData(AREA_NM: string, areaPopPastData: any[]) {
-    let currentData: object[] = [];
-    const cacheKey = `POPULATION_Past_${AREA_NM}`;
-    const cacheValue: string | undefined = await this.cacheManager.get(
-      cacheKey,
-    );
-    if (cacheValue) {
-      // append new data to existing value
-      currentData = JSON.parse(cacheValue);
-      currentData = [currentData, areaPopPastData];
-
-      await this.cacheManager.set(cacheKey, JSON.stringify(currentData));
-    } else {
-      // save data for the first time
-      await this.cacheManager.set(cacheKey, JSON.stringify(areaPopPastData));
-    }
   }
 
   async saveAreaWeatherData(AREA_NM, areaWeatherData) {
@@ -102,53 +86,12 @@ export class SeoulService {
       resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
     );
   }
-  //인구 시간대 정보 캐싱
-  async dataPopCache(rawDatas) {
-    const unixTime = Date.now();
-    const date = new Date(unixTime);
-    const time = date.toLocaleTimeString('ko-KR', {
-      timeZone: 'Asia/Seoul',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    const formattedDate = `${date
-      .toLocaleDateString('ko-KR', { timeZone: 'Asia/Seoul' })
-      .replace(/\//g, '-')}-${time}`;
-    console.log(formattedDate);
 
-    await Promise.all(rawDatas).then(rawDatas => {
-      try {
-        for (const rawData of rawDatas) {
-          const output = JSON.parse(
-            convert.xml2json(rawData.data, {
-              compact: true,
-              spaces: 2,
-              textFn: removeJsonTextAttribute,
-            }),
-          )['SeoulRtd.citydata']['CITYDATA'];
-          // 지역 이름
-          const AREA_NM = output['AREA_NM'];
-          // 인구 정보
-          const areaPopPastData = {
-            AREA_NM: AREA_NM,
-            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
-            CACHE_TIME: formattedDate,
-          };
-
-          const cacheList = [
-            this.saveAreaPopPastData(AREA_NM, areaPopPastData),
-          ];
-          Promise.all(cacheList);
-          console.log(`${AREA_NM} 시간대 정보 저장 완료!`);
-        }
-      } catch (err) {
-        console.log(err);
-        setTimeout(() => {
-          this.dataPopCache(rawDatas);
-        }, 10000);
-      }
-    });
+  async getPastData(AREA_NM) {
+    const data = await this.cacheManager.get(`POPULATION_${AREA_NM}`);
+    return new Promise(resolve => resolve(data));
   }
+
   async dataCache(rawDatas) {
     await Promise.all(rawDatas).then(rawDatas => {
       try {
@@ -162,42 +105,89 @@ export class SeoulService {
           )['SeoulRtd.citydata']['CITYDATA'];
           // 지역 이름
           const AREA_NM = output['AREA_NM'];
-          // 인구 정보
-          const areaPopData = {
-            AREA_NM: AREA_NM,
-            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+          // 현재 인구 정보
+          const CURRENT_POP_DATA = output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'];
+          const CURRENT_TIME = dayjs(CURRENT_POP_DATA['PPLTN_TIME']);
+          // 요약 정보 저장용(POP_RECORD) 객체
+          const CURRENT_POP_RECORD = {
+            time: CURRENT_POP_DATA['PPLTN_TIME'],
+            congestion: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
+            population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
           };
 
-          // 날씨 정보
-          const areaWeatherData = {
-            AREA_NM: AREA_NM,
-            ...output['WEATHER_STTS']['WEATHER_STTS'],
-          };
+          this.getPastData(AREA_NM).then((data: string) => {
+            // 현재 REDIS 저장된 인구 정보 호출 (없으면 PAST_DATA = null)
+            const PAST_DATA: PopulationDto = JSON.parse(data);
+            let POP_RECORD: object[] = [];
 
-          // 지역 도로 정보 요약
-          const avgRoadData = {
-            AREA_NM: AREA_NM,
-            ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
-          };
+            if (PAST_DATA) {
+              // 인구 과거 이력 불러오기
+              const PAST_POP_RECORD = PAST_DATA['POP_RECORD'];
+              POP_RECORD = [...PAST_POP_RECORD];
+              // 저장되어있는 인구 정보 시간
+              const PAST_TIME = dayjs(PAST_DATA['PPLTN_TIME']);
 
-          // 지역 도로 정보 상세
-          const roadTrafficStts =
-            output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+              if (CURRENT_TIME.isAfter(PAST_TIME, 'hour')) {
+                POP_RECORD.push(CURRENT_POP_RECORD);
+              } else {
+                // 현재 인구 데이터 요약본이 같은 시간이면 업데이트
+                const lastRecordTime = dayjs(
+                  POP_RECORD[POP_RECORD.length - 1]['time'],
+                );
+                if (CURRENT_TIME.isSame(lastRecordTime, 'hour')) {
+                  POP_RECORD.pop();
+                  POP_RECORD.push(CURRENT_POP_RECORD);
+                }
+              }
 
-          //   버스 정보 전체
-          let busData = {};
-          if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
-            busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
-          }
+              // 12시간 초과 데이터는 삭제
+              if (POP_RECORD.length > 12) {
+                POP_RECORD.shift();
+              }
+            }
 
-          const cacheList = [
-            this.saveAreaPopData(AREA_NM, areaPopData),
-            this.saveAvgRoadData(AREA_NM, avgRoadData),
-            this.saveAreaWeatherData(AREA_NM, areaWeatherData),
-            this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
-            this.saveBusData(AREA_NM, busData),
-          ];
-          Promise.all(cacheList);
+            // 저장된 데이터 없으면 REDIS에 현재 인구 요약본 추가
+            if (POP_RECORD.length === 0) {
+              POP_RECORD.push(CURRENT_POP_RECORD);
+            }
+
+            const areaPopData = {
+              AREA_NM: AREA_NM,
+              ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+              POP_RECORD: POP_RECORD,
+            };
+
+            // 날씨 정보
+            const areaWeatherData = {
+              AREA_NM: AREA_NM,
+              ...output['WEATHER_STTS']['WEATHER_STTS'],
+            };
+
+            // 지역 도로 정보 요약
+            const avgRoadData = {
+              AREA_NM: AREA_NM,
+              ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
+            };
+
+            // 지역 도로 정보 상세
+            const roadTrafficStts =
+              output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+
+            //   버스 정보 전체
+            let busData = {};
+            if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
+              busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+            }
+
+            const cacheList = [
+              this.saveAreaPopData(AREA_NM, areaPopData),
+              this.saveAvgRoadData(AREA_NM, avgRoadData),
+              this.saveAreaWeatherData(AREA_NM, areaWeatherData),
+              this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
+              this.saveBusData(AREA_NM, busData),
+            ];
+            Promise.all(cacheList);
+          });
         }
       } catch (err) {
         console.log(err);
@@ -206,39 +196,6 @@ export class SeoulService {
         }, 10000);
       }
     });
-  }
-  //인구 시간대별 정보 호출, 캐시 저장
-  async savePopPastData() {
-    for (let i = 0; i < areaList.length; i += 25) {
-      const urls = [];
-      for (let j = i; j < i + 5; j++) {
-        urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_1}/xml/citydata/1/50/${areaList[j]['AREA_NM']}`,
-        );
-      }
-      for (let k = i + 5; k < i + 10; k++) {
-        urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_2}/xml/citydata/1/50/${areaList[k]['AREA_NM']}`,
-        );
-      }
-      for (let l = i + 10; l < i + 15; l++) {
-        urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_3}/xml/citydata/1/50/${areaList[l]['AREA_NM']}`,
-        );
-      }
-      for (let m = i + 15; m < i + 20; m++) {
-        urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_4}/xml/citydata/1/50/${areaList[m]['AREA_NM']}`,
-        );
-      }
-      for (let n = i + 20; n < i + 25; n++) {
-        urls.push(
-          `http://openapi.seoul.go.kr:8088/${process.env.API_KEY_5}/xml/citydata/1/50/${areaList[n]['AREA_NM']}`,
-        );
-      }
-      const rawDatas = await this.getMultipleDatas(urls);
-      await this.dataPopCache(rawDatas);
-    }
   }
 
   async saveSeoulData() {
@@ -284,16 +241,6 @@ export class SeoulService {
     }
     return result;
   }
-  // 12시간 전 인구수 조회
-  async findPastPop(placeId: PlaceIdRequestDto) {
-    const result: object[] = [];
-    const now = Date.now();
-
-    const cacheKey = `POPULATION_Past_${placeId}`;
-    const cacheValue = JSON.parse(await this.cacheManager.get(cacheKey));
-
-    return cacheValue;
-  }
 
   async findAllWeather() {
     const result: object[] = [];
@@ -303,7 +250,6 @@ export class SeoulService {
       );
       result.push(data);
     }
-    console.log('------result------', result);
     return { result };
   }
 

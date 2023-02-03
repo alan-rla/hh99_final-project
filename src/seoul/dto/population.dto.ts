@@ -103,9 +103,22 @@ export class PopulationDto {
     description: '대체 데이터 여부',
   })
   readonly REPLACE_YN: string;
+
   @ApiProperty({
     example: '2023-01-10 20:30',
     description: '실시간 인구 데이터 업데이트 시간',
   })
   readonly PPLTN_TIME: string;
+
+  @ApiProperty({
+    example: [
+      {
+        time: '2023-02-02 15:20',
+        congestion: '붐빔',
+        population: '34000~36000명',
+      },
+    ],
+    description: '과거 인구 이력',
+  })
+  readonly POP_RECORD: object[];
 }
