@@ -18,6 +18,7 @@ import * as redisStore from 'cache-manager-ioredis';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SeoulModule } from './seoul/seoul.module';
 import { RouteModule } from './route';
+import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RouteModule } from './route';
     AreaModule,
     SeoulModule,
     RouteModule,
+    TouristSpotModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
