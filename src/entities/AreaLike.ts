@@ -21,6 +21,8 @@ export class AreaLike {
   LAT: number;
   @Column('int', { name: 'likeCnt' })
   likeCnt: number;
+  @Column('varchar', { name: 'areaImg', length: 255 })
+  areaImg: string;
 
   @OneToMany(() => User_Like, user_like => user_like.Area)
   UserLike: User_Like[];
