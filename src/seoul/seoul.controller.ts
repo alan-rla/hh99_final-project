@@ -1,9 +1,8 @@
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { Timeout, SchedulerRegistry } from '@nestjs/schedule';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CronJob } from 'cron';
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
-import { PlaceIdRequestDto } from './dto/placeId-request.dto';
 import { PopulationDto } from './dto/population.dto';
 import { FindAllRoadsDto, FindRoadsDto } from './dto/road.dto';
 import { SeoulService } from './seoul.service';
@@ -53,6 +52,12 @@ export class SeoulController {
     return this.seoulService.findAllRoads();
   }
 
+  @ApiParam({
+    name: 'placeId',
+    required: true,
+    description: '장소 이름',
+    example: '여의도',
+  })
   @ApiResponse({
     type: FindRoadsDto,
     status: 200,
@@ -60,18 +65,36 @@ export class SeoulController {
   })
   @ApiOperation({ summary: '도로 정보 전체 조회' })
   @Get(':placeId/roads')
-  async findRoads(@Param('placeId') placeId: PlaceIdRequestDto) {
+  async findRoads(@Param('placeId') placeId: string) {
     return this.seoulService.findRoads(placeId);
   }
 
+  @ApiParam({
+    name: 'placeId',
+    required: true,
+    description: '장소 이름',
+    example: '여의도',
+  })
   @Get('/:placeId/bus')
-  async findAllBuses(@Param('placeId') placeId: PlaceIdRequestDto) {
+  async findAllBuses(@Param('placeId') placeId: string) {
     return this.seoulService.findAllBuses(placeId);
   }
 
+  @ApiParam({
+    name: 'placeId',
+    required: true,
+    description: '장소 이름',
+    example: '여의도',
+  })
+  @ApiParam({
+    name: 'busId',
+    required: true,
+    description: '버스 정거장 이름',
+    example: 118000007,
+  })
   @Get('/:placeId/bus/:busId')
   async findBus(
-    @Param('placeId') placeId: PlaceIdRequestDto,
+    @Param('placeId') placeId: string,
     @Param('busId') busId: number,
   ) {
     return this.seoulService.findBus(placeId, +busId);
@@ -87,13 +110,19 @@ export class SeoulController {
     return this.seoulService.findAllWeather();
   }
 
+  @ApiParam({
+    name: 'placeId',
+    required: true,
+    description: '장소 이름',
+    example: '여의도',
+  })
   @ApiResponse({
     status: 200,
     description: '지역 날씨 정보 조회',
   })
   @ApiOperation({ summary: '지역 날씨 정보 조회' })
   @Get('/:placeId/weather')
-  async findOneWeather(@Param('placeId') placeId: PlaceIdRequestDto) {
+  async findOneWeather(@Param('placeId') placeId: string) {
     return this.seoulService.findOneWeather(placeId);
   }
 }
