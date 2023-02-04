@@ -10,7 +10,6 @@ import { Cache } from 'cache-manager';
 import convert from 'xml-js';
 import areaList from '../common/area-list';
 import removeJsonTextAttribute from '../common/functions/xml.value.converter';
-import { PlaceIdRequestDto } from './dto/placeId-request.dto';
 import dayjs from 'dayjs';
 import { PopulationDto } from './dto/population.dto';
 
@@ -248,7 +247,7 @@ export class SeoulService {
     return { result };
   }
 
-  async findOneWeather(placeId: PlaceIdRequestDto) {
+  async findOneWeather(placeId: string) {
     const result = JSON.parse(
       await this.cacheManager.get(`WEATHER_${placeId}`),
     );
@@ -267,7 +266,7 @@ export class SeoulService {
     return { result };
   }
 
-  async findRoads(placeId: PlaceIdRequestDto) {
+  async findRoads(placeId: string) {
     const result = JSON.parse(
       await this.cacheManager.get(`ROAD_TRAFFIC_${placeId}`),
     );
@@ -275,7 +274,7 @@ export class SeoulService {
     else return { result };
   }
 
-  async findAllBuses(placeId: PlaceIdRequestDto) {
+  async findAllBuses(placeId: string) {
     const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
 
     if (!data) {
@@ -289,7 +288,7 @@ export class SeoulService {
     return data;
   }
 
-  async findBus(placeId: PlaceIdRequestDto, busId: number) {
+  async findBus(placeId: string, busId: number) {
     const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
 
     if (!data) {
