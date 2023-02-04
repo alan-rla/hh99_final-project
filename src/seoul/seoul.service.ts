@@ -120,7 +120,7 @@ export class SeoulService {
             const PAST_POP_RECORD = PAST_DATA['POP_RECORD'];
             POP_RECORD = [...PAST_POP_RECORD];
             // 저장되어있는 인구 정보 시간
-            const PAST_TIME = dayjs(PAST_DATA['PPLTN_TIME']);
+            const PAST_TIME = dayjs(PAST_DATA['time']);
 
             if (CURRENT_TIME.isAfter(PAST_TIME, 'hour')) {
               POP_RECORD.push(CURRENT_POP_RECORD);
@@ -148,7 +148,11 @@ export class SeoulService {
 
           const areaPopData = {
             AREA_NM: AREA_NM,
-            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+            congestLvl: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
+            msg: CURRENT_POP_DATA['AREA_CONGEST_MSG'],
+            pplMin: CURRENT_POP_DATA['AREA_PPLTN_MIN'],
+            pplMax: CURRENT_POP_DATA['AREA_PPLTN_MAX'],
+            time: CURRENT_POP_DATA['PPLTN_TIME'],
             POP_RECORD: POP_RECORD,
           };
 
