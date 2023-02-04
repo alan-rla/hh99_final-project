@@ -87,13 +87,8 @@ export class SeoulService {
     );
   }
 
-  async getPastData(AREA_NM) {
-    const data = await this.cacheManager.get(`POPULATION_${AREA_NM}`);
-    return new Promise(resolve => resolve(data));
-  }
-
   async dataCache(rawDatas) {
-    await Promise.all(rawDatas).then(rawDatas => {
+    await Promise.all(rawDatas).then(async rawDatas => {
       try {
         for (const rawData of rawDatas) {
           const output = JSON.parse(
@@ -115,79 +110,79 @@ export class SeoulService {
             population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
           };
 
-          this.getPastData(AREA_NM).then((data: string) => {
-            // 현재 REDIS 저장된 인구 정보 호출 (없으면 PAST_DATA = null)
-            const PAST_DATA: PopulationDto = JSON.parse(data);
-            let POP_RECORD: object[] = [];
+          // 현재 REDIS 저장된 인구 정보 호출 (없으면 PAST_DATA = null)
+          const PAST_DATA: PopulationDto = JSON.parse(
+            await this.cacheManager.get(`POPULATION_${AREA_NM}`),
+          );
+          let POP_RECORD: object[] = [];
 
-            if (PAST_DATA) {
-              // 인구 과거 이력 불러오기
-              const PAST_POP_RECORD = PAST_DATA['POP_RECORD'];
-              POP_RECORD = [...PAST_POP_RECORD];
-              // 저장되어있는 인구 정보 시간
-              const PAST_TIME = dayjs(PAST_DATA['PPLTN_TIME']);
+          if (PAST_DATA) {
+            // 인구 과거 이력 불러오기
+            const PAST_POP_RECORD = PAST_DATA['POP_RECORD'];
+            POP_RECORD = [...PAST_POP_RECORD];
+            // 저장되어있는 인구 정보 시간
+            const PAST_TIME = dayjs(PAST_DATA['PPLTN_TIME']);
 
-              if (CURRENT_TIME.isAfter(PAST_TIME, 'hour')) {
-                POP_RECORD.push(CURRENT_POP_RECORD);
-              } else {
-                // 현재 인구 데이터 요약본이 같은 시간이면 업데이트
-                const lastRecordTime = dayjs(
-                  POP_RECORD[POP_RECORD.length - 1]['time'],
-                );
-                if (CURRENT_TIME.isSame(lastRecordTime, 'hour')) {
-                  POP_RECORD.pop();
-                  POP_RECORD.push(CURRENT_POP_RECORD);
-                }
-              }
-
-              // 12시간 초과 데이터는 삭제
-              if (POP_RECORD.length > 12) {
-                POP_RECORD.shift();
-              }
-            }
-
-            // 저장된 데이터 없으면 REDIS에 현재 인구 요약본 추가
-            if (POP_RECORD.length === 0) {
+            if (CURRENT_TIME.isAfter(PAST_TIME, 'hour')) {
               POP_RECORD.push(CURRENT_POP_RECORD);
+            } else {
+              // 현재 인구 데이터 요약본이 같은 시간이면 업데이트
+              const lastRecordTime = dayjs(
+                POP_RECORD[POP_RECORD.length - 1]['time'],
+              );
+              if (CURRENT_TIME.isSame(lastRecordTime, 'hour')) {
+                POP_RECORD.pop();
+                POP_RECORD.push(CURRENT_POP_RECORD);
+              }
             }
 
-            const areaPopData = {
-              AREA_NM: AREA_NM,
-              ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
-              POP_RECORD: POP_RECORD,
-            };
-
-            // 날씨 정보
-            const areaWeatherData = {
-              AREA_NM: AREA_NM,
-              ...output['WEATHER_STTS']['WEATHER_STTS'],
-            };
-
-            // 지역 도로 정보 요약
-            const avgRoadData = {
-              AREA_NM: AREA_NM,
-              ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
-            };
-
-            // 지역 도로 정보 상세
-            const roadTrafficStts =
-              output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
-
-            //   버스 정보 전체
-            let busData = {};
-            if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
-              busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+            // 12시간 초과 데이터는 삭제
+            if (POP_RECORD.length > 12) {
+              POP_RECORD.shift();
             }
+          }
 
-            const cacheList = [
-              this.saveAreaPopData(AREA_NM, areaPopData),
-              this.saveAvgRoadData(AREA_NM, avgRoadData),
-              this.saveAreaWeatherData(AREA_NM, areaWeatherData),
-              this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
-              this.saveBusData(AREA_NM, busData),
-            ];
-            Promise.all(cacheList);
-          });
+          // 저장된 데이터 없으면 REDIS에 현재 인구 요약본 추가
+          if (POP_RECORD.length === 0) {
+            POP_RECORD.push(CURRENT_POP_RECORD);
+          }
+
+          const areaPopData = {
+            AREA_NM: AREA_NM,
+            ...output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'],
+            POP_RECORD: POP_RECORD,
+          };
+
+          // 날씨 정보
+          const areaWeatherData = {
+            AREA_NM: AREA_NM,
+            ...output['WEATHER_STTS']['WEATHER_STTS'],
+          };
+
+          // 지역 도로 정보 요약
+          const avgRoadData = {
+            AREA_NM: AREA_NM,
+            ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
+          };
+
+          // 지역 도로 정보 상세
+          const roadTrafficStts =
+            output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+
+          //   버스 정보 전체
+          let busData = {};
+          if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
+            busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
+          }
+
+          const cacheList = [
+            this.saveAreaPopData(AREA_NM, areaPopData),
+            this.saveAvgRoadData(AREA_NM, avgRoadData),
+            this.saveAreaWeatherData(AREA_NM, areaWeatherData),
+            this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
+            this.saveBusData(AREA_NM, busData),
+          ];
+          Promise.all(cacheList);
         }
       } catch (err) {
         console.log(err);
