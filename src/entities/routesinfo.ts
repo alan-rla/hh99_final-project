@@ -1,10 +1,14 @@
 import {
   Column,
   CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-
+import { Users } from './Users';
+@Entity({ schema: 'hh99_final-project', name: 'routesinfo' })
 export class RoutesInfo {
   @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
@@ -19,10 +23,10 @@ export class RoutesInfo {
   distance: number;
 
   @Column('varchar', { name: 'origin' }) // 출발지 이름 (도로명, 정류장 등)
-  origin: string;
+  nameOrigin: string;
 
   @Column('varchar', { name: 'destination' }) // 검색 지역 (도착지명)
-  destination: string;
+  nameDestination: string;
 
   @Column('varchar', { name: 'routeNames' }) //출발지로부터 경로 이름 또는 노선
   routeNames: string;
@@ -38,4 +42,16 @@ export class RoutesInfo {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @ManyToOne(() => Users, users => users.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn([
+    {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+  ])
+  User: Users;
 }

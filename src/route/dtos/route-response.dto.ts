@@ -18,7 +18,11 @@ export class RouteResponseDto implements Route {
 
   @IsString()
   @ApiProperty({ description: '출발지 이름(도로명, 정류장 등)' })
-  public name: string;
+  public nameOrigin: string;
+
+  @IsString()
+  @ApiProperty({ description: '도착지 이름(AREA_NM)' })
+  public nameDestination: string;
 
   @IsArray()
   @IsString({ each: true })

@@ -22,7 +22,12 @@ export interface Route {
   /**
    * 출발지 이름(도로명, 정류장 등)
    */
-  name: string;
+  nameOrigin: string;
+
+  /**
+   * 도착지지 이름(AREA_NM)
+   */
+  nameDestination: string;
 
   /**
    * 출발지로부터의 노선 이름 배열

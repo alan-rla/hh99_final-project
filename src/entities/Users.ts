@@ -13,6 +13,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Friends } from './Friends';
+import { RoutesInfo } from './routesinfo';
 import { TermsCondition } from './termscondition';
 import { User_Like } from './User_Like';
 
@@ -52,12 +53,6 @@ export class Users {
   @OneToMany(() => User_Like, user_like => user_like.User)
   UserLike: User_Like[];
 
-  // @OneToOne(() => TermsCondition, termscondition => termscondition.user)
-  // @JoinColumn([
-  //   {
-  //     name: 'id',
-  //     referencedColumnName: 'id',
-  //   },
-  // ])
-  // TermsCondition: TermsCondition;
+  @OneToMany(() => RoutesInfo, routesInfo => routesInfo.User)
+  routesInfo: RoutesInfo[];
 }
