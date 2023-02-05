@@ -19,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SeoulModule } from './seoul/seoul.module';
 import { RouteModule } from './route';
 import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
+import { RpollutionModule } from './rpollution/rpollution.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
     SeoulModule,
     RouteModule,
     TouristSpotModule,
+    RpollutionModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
