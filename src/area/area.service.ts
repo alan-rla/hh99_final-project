@@ -1,13 +1,22 @@
 import { Users } from 'src/entities/Users';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  CACHE_MANAGER,
+  HttpException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { AreaLike } from 'src/entities/AreaLike';
 import { Repository, DataSource } from 'typeorm';
 import { User_Like } from 'src/entities/User_Like';
+import { Cache } from 'cache-manager';
+import crowdPicConverter from '../common/functions/pic.converter';
 
 @Injectable()
 export class AreaService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectRepository(AreaLike)
     private areaLikeRepository: Repository<AreaLike>,
     @InjectRepository(User_Like)
@@ -24,6 +33,8 @@ export class AreaService {
     const isArea = await this.areaLikeRepository.findOne({
       where: { AREA_NM: areaName },
     });
+    if (!isArea) throw new HttpException('wrong place name', 404);
+
     const findOneAreaLikeCount = await this.userLikeRepository
       .createQueryBuilder('user_like')
       .leftJoinAndSelect('user_like.Area', 'areaLike')
@@ -31,9 +42,93 @@ export class AreaService {
         areaLike_id: isArea.areaLike_id,
       })
       .getCount();
+    const popData = JSON.parse(
+      await this.cacheManager.get(`POPULATION_${areaName}`),
+    );
+    const weather = JSON.parse(
+      await this.cacheManager.get(`WEATHER_${areaName}`),
+    );
+    const road = JSON.parse(
+      await this.cacheManager.get(`ROAD_AVG_${areaName}`),
+    );
 
-    isArea.likeCnt = findOneAreaLikeCount;
-    return isArea;
+    const result = {
+      ...isArea,
+      likeCnt: findOneAreaLikeCount,
+      congestLvl: popData['AREA_CONGEST_LVL'],
+      weather: weather['PCP_MSG'],
+      air: weather['AIR_IDX'],
+      road: road['ROAD_TRAFFIC_IDX'],
+    };
+    return result;
+  }
+
+  async findAreaPop(areaName: string) {
+    const data = JSON.parse(
+      await this.cacheManager.get(`POPULATION_${areaName}`),
+    );
+    const crowdLvl = data['AREA_CONGEST_LVL'];
+    let img = '';
+    if (crowdLvl === '여유') {
+      img = process.env.CROWD_LVL1;
+    } else if (crowdLvl === '보통') {
+      img = process.env.CROWD_LVL2;
+    } else if (crowdLvl === '약간 붐빔') {
+      img = process.env.CROWD_LVL3;
+    } else {
+      img = process.env.CROWD_LVL4;
+    }
+
+    const result = {
+      POP_IMG: img,
+      ...data,
+    };
+
+    return result;
+  }
+
+  async findAreaWeather(areaName: string) {
+    const data = JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`));
+    const weather = data['PRECPT_TYPE'];
+    let img = '';
+    if (weather === '없음') {
+      img = process.env.WEATHER_NORMAL;
+    } else if (weather === '비') {
+      img = process.env.WEATHER_RANIY;
+    } else {
+      img = process.env.WEATHER_SNOWY;
+    }
+
+    const result = {
+      WEATHER_IMG: img,
+      ...data,
+    };
+
+    return result;
+  }
+
+  async findAreaAir(areaName: string) {
+    const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+    const airLvl = data['AIR_IDX'];
+    let img = '';
+    if (airLvl === '좋음') {
+      img = process.env.AIR_LVL1;
+    } else if (airLvl === '보통') {
+      img = process.env.AIR_LVL2;
+    } else if (airLvl === '나쁨') {
+      img = process.env.AIR_LVL3;
+    } else if (airLvl === '매우 나쁨') {
+      img = process.env.AIR_LVL4;
+    } else {
+      img = process.env.AIR_MAINTENANCE;
+    }
+
+    const result = {
+      AIR_IMG: img,
+      ...data,
+    };
+
+    return result;
   }
 
   async likeArea(user: Users, areaName: string) {
