@@ -58,6 +58,17 @@ export class SeoulService {
     );
   }
 
+  async saveAreaAirData(AREA_NM, areaWeatherData) {
+    await new Promise(resolve =>
+      resolve(
+        this.cacheManager.set(
+          `AIR_${AREA_NM}`,
+          JSON.stringify(areaWeatherData),
+        ),
+      ),
+    );
+  }
+
   async saveAvgRoadData(AREA_NM, avgRoadData) {
     await new Promise(resolve =>
       resolve(
@@ -156,10 +167,35 @@ export class SeoulService {
             POP_RECORD: POP_RECORD,
           };
 
+          const {
+            PM25_INDEX,
+            PM25,
+            PM10_INDEX,
+            PM10,
+            AIR_IDX,
+            AIR_IDX_MVL,
+            AIR_IDX_MAIN,
+            AIR_MSG,
+            ...weather
+          } = output['WEATHER_STTS']['WEATHER_STTS'];
+
           // 날씨 정보
           const areaWeatherData = {
             AREA_NM: AREA_NM,
-            ...output['WEATHER_STTS']['WEATHER_STTS'],
+            ...weather,
+          };
+
+          // 미세먼지 정보
+          const areaAirData = {
+            AREA_NM: AREA_NM,
+            PM25_INDEX: PM25_INDEX,
+            PM25: PM25,
+            PM10_INDEX: PM10_INDEX,
+            PM10: PM10,
+            AIR_IDX: AIR_IDX,
+            AIR_IDX_MVL: AIR_IDX_MVL,
+            AIR_IDX_MAIN: AIR_IDX_MAIN,
+            AIR_MSG: AIR_MSG,
           };
 
           // 지역 도로 정보 요약
@@ -182,6 +218,7 @@ export class SeoulService {
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
             this.saveAreaWeatherData(AREA_NM, areaWeatherData),
+            this.saveAreaAirData(AREA_NM, areaAirData),
             this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
             this.saveBusData(AREA_NM, busData),
           ];
@@ -191,7 +228,7 @@ export class SeoulService {
         console.log(err);
         setTimeout(() => {
           this.dataCache(rawDatas);
-        }, 10000);
+        }, 100000);
       }
     });
   }
@@ -245,6 +282,17 @@ export class SeoulService {
     for (const area of areaList) {
       const data = JSON.parse(
         await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    return { result };
+  }
+
+  async findAllAir() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`AIR_${area['AREA_NM']}`),
       );
       result.push(data);
     }

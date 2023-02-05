@@ -13,6 +13,9 @@ import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNu
 import { AreaService } from './area.service';
 import { FindAllAreaDto, FindOneAreaDto } from './dto/findall-area.dto';
 import { LikeAreaDto } from './dto/like-area.dto';
+import { FindAreaPopDto } from './dto/population.dto';
+import { FindAreaWeatherDto } from './dto/weather.dto';
+import { FindAreaAirDto } from './dto/air.dto';
 
 @ApiTags('AREA')
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -40,6 +43,39 @@ export class AreaController {
   @Get('/:areaName')
   findOneAreas(@Param('areaName') areaName: string) {
     return this.areaService.findOneAreas(areaName);
+  }
+
+  @ApiOperation({ summary: '지역 인구 정보 단건 조회' })
+  @ApiResponse({
+    type: FindAreaPopDto,
+    status: 200,
+    description: '지역 인구 정보 단건 조회',
+  })
+  @Get('/:areaName/population')
+  findAreaPop(@Param('areaName') areaName: string) {
+    return this.areaService.findAreaPop(areaName);
+  }
+
+  @ApiOperation({ summary: '지역 날씨 정보 단건 조회' })
+  @ApiResponse({
+    type: FindAreaWeatherDto,
+    status: 200,
+    description: '지역 날씨 정보 단건 조회',
+  })
+  @Get('/:areaName/weather')
+  findAreaWeather(@Param('areaName') areaName: string) {
+    return this.areaService.findAreaWeather(areaName);
+  }
+
+  @ApiOperation({ summary: '지역 대기환경 정보 단건 조회' })
+  @ApiResponse({
+    type: FindAreaAirDto,
+    status: 200,
+    description: '지역 대기환경 정보 단건 조회',
+  })
+  @Get('/:areaName/air')
+  findAreaAir(@Param('areaName') areaName: string) {
+    return this.areaService.findAreaAir(areaName);
   }
 
   @ApiOperation({ summary: '지역 좋아요' })
