@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { AreaLike } from 'src/entities/AreaLike';
 import { Friends } from 'src/entities/Friends';
-import { TermsCondition } from 'src/entities/termscondition';
+import { TermsCondition } from '../entities/termscondition';
 import { Tourist_Spot } from 'src/entities/Tourist_spot';
 import { Users } from 'src/entities/Users';
 import { User_Like } from 'src/entities/User_Like';
@@ -29,6 +29,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Tourist_Spot,
         TermsCondition,
       ],
+      migrations: ['dist/migrations/*{.ts,.js}'],
     };
   }
 }

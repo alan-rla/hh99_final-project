@@ -40,15 +40,15 @@ export class UsersService {
       });
 
       //회원가입 전 약관동의가 필수, 회원가입시 약관동의 테이블에 회원가입한 유저의 약관동의 정보를 입력해준다
-      const data = new TermsCondition();
-      data.agreed = 'agreed';
-      data.user = result.id;
-      data.createdAt = new Date();
-      data.updatedAt = new Date();
+      const terms = new TermsCondition();
+      terms.agreed = 'agreed';
+      terms.user = result;
+      terms.createdAt = new Date();
+      terms.updatedAt = new Date();
 
       const tcsave = await queryRunner.manager
         .getRepository(TermsCondition)
-        .save(data);
+        .save(terms);
 
       await queryRunner.commitTransaction();
       return result;
