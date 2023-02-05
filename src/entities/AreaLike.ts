@@ -19,8 +19,6 @@ export class AreaLike {
   LNG: number;
   @Column('double', { name: 'LAT' })
   LAT: number;
-  @Column('int', { name: 'likeCnt' })
-  likeCnt: number;
   @Column('varchar', { name: 'areaImg', length: 255 })
   areaImg: string;
 

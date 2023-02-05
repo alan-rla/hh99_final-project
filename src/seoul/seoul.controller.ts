@@ -110,6 +110,11 @@ export class SeoulController {
     return this.seoulService.findAllWeather();
   }
 
+  @Get('/air')
+  async findAllAir() {
+    return this.seoulService.findAllAir();
+  }
+
   @ApiParam({
     name: 'placeId',
     required: true,
