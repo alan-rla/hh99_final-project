@@ -266,6 +266,34 @@ export class SeoulService {
     }
   }
 
+  async saveSeoulAirData() {
+    const url = `http://openapi.seoul.go.kr:8088/${process.env.AIR_KEY}/xml/ListAirQualityByDistrictService/1/25/`;
+    const stream = this.httpService.get(encodeURI(url));
+    const rawData = await lastValueFrom(stream);
+
+    const datas = JSON.parse(
+      convert.xml2json(rawData.data, {
+        compact: true,
+        spaces: 2,
+        textFn: removeJsonTextAttribute,
+      }),
+    )['ListAirQualityByDistrictService']['row'];
+
+    for (const data of datas) {
+      const GU_CODE = data['MSRSTENAME'];
+      const airData = {
+        NITROGEN: data['NITROGEN'],
+        OZONE: data['OZONE'],
+        CARBON: data['CARBON'],
+        SULFUROUS: data['SULFUROUS'],
+      };
+      await this.cacheManager.set(
+        `AIR_ADDITION_${GU_CODE}`,
+        JSON.stringify(airData),
+      );
+    }
+  }
+
   async findAllPop() {
     const result: object[] = [];
     for (const area of areaList) {

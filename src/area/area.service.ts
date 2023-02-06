@@ -108,8 +108,16 @@ export class AreaService {
   }
 
   async findAreaAir(areaName: string) {
-    const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-    const airLvl = data['AIR_IDX'];
+    const guCode = await this.areaLikeRepository.findOne({
+      where: { AREA_NM: areaName },
+      select: { GU_CODE: true },
+    });
+    const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+    const data2 = JSON.parse(
+      await this.cacheManager.get(`AIR_ADDITION_${guCode.GU_CODE}`),
+    );
+
+    const airLvl = data1['AIR_IDX'];
     let img = '';
     if (airLvl === '좋음') {
       img = process.env.AIR_LVL1;
@@ -125,7 +133,8 @@ export class AreaService {
 
     const result = {
       AIR_IMG: img,
-      ...data,
+      ...data1,
+      ...data2,
     };
 
     return result;
