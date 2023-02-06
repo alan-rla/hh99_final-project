@@ -7,15 +7,22 @@ import {
   RequestRouteParamsDto,
   RouteResponseDto,
 } from './dtos';
+import { RouteService } from './route.service';
 
 @Controller('/routes')
 @ApiTags('Routes')
 export class RouteController {
+  constructor(private readonly routeService: RouteService) {}
+
   @Get('/')
   @ApiOperation({ summary: '이동 경로 요약 정보' })
   @ApiOkResponse({ type: [RouteResponseDto] })
-  public getCarRoute(@Query() query: RequestRouteQuery): RouteResponseDto[] {
-    return [];
+  public async getRoutes(
+    @Query() query: RequestRouteQuery,
+  ): Promise<RouteResponseDto[]> {
+    const params = this.adaptQuery(query);
+
+    return this.routeService.getRoutes(params);
   }
 
   private adaptQuery(query: RequestRouteQuery): RequestRouteParamsDto {
