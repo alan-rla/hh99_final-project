@@ -7,10 +7,11 @@ import { Friends } from 'src/entities/Friends';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionsFactory } from 'src/common/multer.options';
+import { TermsCondition } from 'src/entities/termscondition';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Users, Friends]),
+    TypeOrmModule.forFeature([Users, Friends, TermsCondition]),
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: multerOptionsFactory,

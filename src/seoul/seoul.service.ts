@@ -58,6 +58,17 @@ export class SeoulService {
     );
   }
 
+  async saveAreaAirData(AREA_NM, areaWeatherData) {
+    await new Promise(resolve =>
+      resolve(
+        this.cacheManager.set(
+          `AIR_${AREA_NM}`,
+          JSON.stringify(areaWeatherData),
+        ),
+      ),
+    );
+  }
+
   async saveAvgRoadData(AREA_NM, avgRoadData) {
     await new Promise(resolve =>
       resolve(
@@ -120,7 +131,7 @@ export class SeoulService {
             const PAST_POP_RECORD = PAST_DATA['POP_RECORD'];
             POP_RECORD = [...PAST_POP_RECORD];
             // 저장되어있는 인구 정보 시간
-            const PAST_TIME = dayjs(PAST_DATA['time']);
+            const PAST_TIME = dayjs(PAST_DATA['PPLTN_TIME']);
 
             if (CURRENT_TIME.isAfter(PAST_TIME, 'hour')) {
               POP_RECORD.push(CURRENT_POP_RECORD);
@@ -148,18 +159,43 @@ export class SeoulService {
 
           const areaPopData = {
             AREA_NM: AREA_NM,
-            congestLvl: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
-            msg: CURRENT_POP_DATA['AREA_CONGEST_MSG'],
-            pplMin: CURRENT_POP_DATA['AREA_PPLTN_MIN'],
-            pplMax: CURRENT_POP_DATA['AREA_PPLTN_MAX'],
-            time: CURRENT_POP_DATA['PPLTN_TIME'],
+            AREA_CONGEST_LVL: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
+            AREA_CONGEST_MSG: CURRENT_POP_DATA['AREA_CONGEST_MSG'],
+            AREA_PPLTN_MIN: CURRENT_POP_DATA['AREA_PPLTN_MIN'],
+            AREA_PPLTN_MAX: CURRENT_POP_DATA['AREA_PPLTN_MAX'],
+            PPLTN_TIME: CURRENT_POP_DATA['PPLTN_TIME'],
             POP_RECORD: POP_RECORD,
           };
+
+          const {
+            PM25_INDEX,
+            PM25,
+            PM10_INDEX,
+            PM10,
+            AIR_IDX,
+            AIR_IDX_MVL,
+            AIR_IDX_MAIN,
+            AIR_MSG,
+            ...weather
+          } = output['WEATHER_STTS']['WEATHER_STTS'];
 
           // 날씨 정보
           const areaWeatherData = {
             AREA_NM: AREA_NM,
-            ...output['WEATHER_STTS']['WEATHER_STTS'],
+            ...weather,
+          };
+
+          // 미세먼지 정보
+          const areaAirData = {
+            AREA_NM: AREA_NM,
+            PM25_INDEX: PM25_INDEX,
+            PM25: PM25,
+            PM10_INDEX: PM10_INDEX,
+            PM10: PM10,
+            AIR_IDX: AIR_IDX,
+            AIR_IDX_MVL: AIR_IDX_MVL,
+            AIR_IDX_MAIN: AIR_IDX_MAIN,
+            AIR_MSG: AIR_MSG,
           };
 
           // 지역 도로 정보 요약
@@ -182,6 +218,7 @@ export class SeoulService {
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
             this.saveAreaWeatherData(AREA_NM, areaWeatherData),
+            this.saveAreaAirData(AREA_NM, areaAirData),
             this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
             this.saveBusData(AREA_NM, busData),
           ];
@@ -191,7 +228,7 @@ export class SeoulService {
         console.log(err);
         setTimeout(() => {
           this.dataCache(rawDatas);
-        }, 10000);
+        }, 100000);
       }
     });
   }
@@ -229,6 +266,34 @@ export class SeoulService {
     }
   }
 
+  async saveSeoulAirData() {
+    const url = `http://openapi.seoul.go.kr:8088/${process.env.AIR_KEY}/xml/ListAirQualityByDistrictService/1/25/`;
+    const stream = this.httpService.get(encodeURI(url));
+    const rawData = await lastValueFrom(stream);
+
+    const datas = JSON.parse(
+      convert.xml2json(rawData.data, {
+        compact: true,
+        spaces: 2,
+        textFn: removeJsonTextAttribute,
+      }),
+    )['ListAirQualityByDistrictService']['row'];
+
+    for (const data of datas) {
+      const GU_CODE = data['MSRSTENAME'];
+      const airData = {
+        NITROGEN: data['NITROGEN'],
+        OZONE: data['OZONE'],
+        CARBON: data['CARBON'],
+        SULFUROUS: data['SULFUROUS'],
+      };
+      await this.cacheManager.set(
+        `AIR_ADDITION_${GU_CODE}`,
+        JSON.stringify(airData),
+      );
+    }
+  }
+
   async findAllPop() {
     const result: object[] = [];
     for (const area of areaList) {
@@ -245,6 +310,17 @@ export class SeoulService {
     for (const area of areaList) {
       const data = JSON.parse(
         await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
+      );
+      result.push(data);
+    }
+    return { result };
+  }
+
+  async findAllAir() {
+    const result: object[] = [];
+    for (const area of areaList) {
+      const data = JSON.parse(
+        await this.cacheManager.get(`AIR_${area['AREA_NM']}`),
       );
       result.push(data);
     }

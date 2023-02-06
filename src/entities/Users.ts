@@ -4,13 +4,16 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Friends } from './Friends';
+import { TermsCondition } from './termscondition';
 import { User_Like } from './User_Like';
 
 @Index('email', ['email'], { unique: true })
@@ -37,10 +40,8 @@ export class Users {
   @DeleteDateColumn()
   deletedAt: Date | null;
 
-
   @Column('varchar', { name: 'profileImg', length: 255 })
   profileImg: string;
-
 
   @OneToMany(() => Friends, friends => friends.User)
   Friend1: Friends[];
@@ -50,4 +51,13 @@ export class Users {
 
   @OneToMany(() => User_Like, user_like => user_like.User)
   UserLike: User_Like[];
+
+  // @OneToOne(() => TermsCondition, termscondition => termscondition.user)
+  // @JoinColumn([
+  //   {
+  //     name: 'id',
+  //     referencedColumnName: 'id',
+  //   },
+  // ])
+  // TermsCondition: TermsCondition;
 }
