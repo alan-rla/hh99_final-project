@@ -8,7 +8,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { multerOptionsFactory } from 'src/common/multer.options';
 import { TermsCondition } from 'src/entities/termscondition';
-import { RoutesInfo } from 'src/entities/routesinfo';
+import { RoutesInfo } from '../entities/routesinfo';
 
 @Module({
   imports: [
