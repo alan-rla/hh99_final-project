@@ -17,6 +17,7 @@ export class UsersService {
     private dataSource: DataSource,
   ) {}
 
+  //회원가입
   async registerUser(email: string, nickname: string, password: string) {
     //회원가입이 진행시 약관동의 테이블에도 회원가입유저의 약관 동의 여부를 저장행야하기 때문에 트랜잭션을 사용한다
     const queryRunner = this.dataSource.createQueryRunner();
@@ -60,6 +61,7 @@ export class UsersService {
     }
   }
 
+  //회원정보 수정
   async updateUser(
     id: number,
     nickname: string,
@@ -104,10 +106,12 @@ export class UsersService {
     }
   }
 
+  //회원 탈퇴
   async deleteUser(id: number) {
     await this.usersRepository.delete(id);
   }
 
+  //친구 찾기
   async searchFriend(nickname: string) {
     const result = await this.usersRepository.find({
       where: { nickname: Like(`%${nickname}%`) },
@@ -116,6 +120,7 @@ export class UsersService {
     return result;
   }
 
+  //친구 추가
   async addFriend(id: number, friendId: number) {
     try {
       const user = await this.usersRepository.findAndCount({
