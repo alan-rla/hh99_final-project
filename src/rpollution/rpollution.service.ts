@@ -3,6 +3,7 @@ import { HttpService } from '@nestjs/axios';
 import {
   CACHE_MANAGER,
   ForbiddenException,
+  HttpException,
   Inject,
   Injectable,
 } from '@nestjs/common';
@@ -33,5 +34,15 @@ export class RpollutionService {
       const key = `pollution_${value.MSRSTENAME}`;
       await this.cacheManager.set(key, value);
     }
+  }
+
+  async findOnePollution(place: string) {
+    const data = await this.cacheManager.get(`pollution_${place}`);
+
+    if (!data) {
+      throw new HttpException('null pollution data', 400);
+    }
+
+    return data;
   }
 }

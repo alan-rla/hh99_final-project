@@ -2,7 +2,7 @@ import { CronJob } from 'cron';
 import { SchedulerRegistry, Timeout } from '@nestjs/schedule';
 import { UndefinedToNullInterceptor } from 'src/common/interceptors/undefinedToNull.interceptor';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Controller, UseInterceptors, Get } from '@nestjs/common';
+import { Controller, UseInterceptors, Get, Param } from '@nestjs/common';
 import { RpollutionService } from './rpollution.service';
 
 @ApiTags('POLLUTION')
@@ -30,5 +30,15 @@ export class RpollutionController {
 
     this.schedulerRegistry.addCronJob('redisPollution', redisSaveData);
     redisSaveData.start();
+  }
+
+  @ApiOperation({ summary: '대기 오염 단건 조회 API' })
+  @ApiResponse({
+    status: 200,
+    description: '대기 오염 단건 조회 API',
+  })
+  @Get('/:place')
+  async findOnePollution(@Param('place') place: string) {
+    return await this.rpollutionService.findOnePollution(place);
   }
 }
