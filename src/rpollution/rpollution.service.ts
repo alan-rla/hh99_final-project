@@ -29,9 +29,9 @@ export class RpollutionService {
 
     const valueData = await lastValueFrom(data);
     const key = 'pollution_data';
-    console.log(valueData);
 
-    const temp = await this.cacheManager.set(key, valueData);
-    return temp;
+    const pollutionData = await this.cacheManager.set(key, valueData);
+
+    return pollutionData;
   }
 }
