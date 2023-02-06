@@ -43,14 +43,14 @@ export class RoutesInfo {
   @JoinColumn({ name: 'subway_id', referencedColumnName: 'subway_id' })
   subwayRoute: SubwayRoute;
 
-  @ManyToOne(() => Users, users => users.routesInfo, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  @JoinColumn({
-    name: 'user_id',
-    referencedColumnName: 'id',
-  })
+  // @ManyToOne(() => Users, users => users.routesInfo, {
+  //   onDelete: 'CASCADE',
+  //   onUpdate: 'CASCADE',
+  // })
+  // @JoinColumn({
+  //   name: 'user_id',
+  //   referencedColumnName: 'id',
+  // })
   User: Users;
   @CreateDateColumn()
   createdAt: Date;
