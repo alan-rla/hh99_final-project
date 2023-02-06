@@ -1,3 +1,4 @@
+import { Logo } from './src/entities/Logo';
 import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
 import { Users } from './src/entities/Users';
@@ -19,7 +20,7 @@ const dataSource = new DataSource({
   charset: 'utf8_general_ci',
   synchronize: false,
   migrations: [__dirname + '/src/migrations/*.ts'],
-  entities: [Users, Friends, AreaLike, Tourist_Spot, User_Like],
+  entities: [Users, Friends, AreaLike, Tourist_Spot, User_Like, Logo],
 });
 
 export default dataSource;
