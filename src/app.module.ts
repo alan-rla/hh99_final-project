@@ -19,6 +19,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SeoulModule } from './seoul/seoul.module';
 import { RouteModule } from './route';
 import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
+import { RpollutionModule } from './rpollution/rpollution.module';
 import { LogoModule } from './logo/logo.module';
 
 @Module({
@@ -43,6 +44,7 @@ import { LogoModule } from './logo/logo.module';
     SeoulModule,
     RouteModule,
     TouristSpotModule,
+    RpollutionModule,
     LogoModule,
   ],
   controllers: [AppController],

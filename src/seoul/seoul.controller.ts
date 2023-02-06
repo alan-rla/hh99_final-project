@@ -16,19 +16,19 @@ export class SeoulController {
     private schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  @ApiOperation({ summary: '50개 지역 정보 REDIS 저장' })
-  @Timeout(0)
-  async saveSeoulData() {
-    // 서버 시작할때 도로 데이터 한번 저장
-    await this.seoulService.saveSeoulData();
+  // @ApiOperation({ summary: '50개 지역 정보 REDIS 저장' })
+  // // @Timeout(0)
+  // async saveSeoulData() {
+  //   // 서버 시작할때 도로 데이터 한번 저장
+  //   await this.seoulService.saveSeoulData();
 
-    // 이후 5분마다 한번씩 도로데이터 저장
-    const saveData = new CronJob('0 */10 * * * *', () => {
-      this.seoulService.saveSeoulData();
-    });
-    this.schedulerRegistry.addCronJob('save data', saveData);
-    saveData.start();
-  }
+  //   // 이후 5분마다 한번씩 도로데이터 저장
+  //   const saveData = new CronJob('0 */10 * * * *', () => {
+  //     this.seoulService.saveSeoulData();
+  //   });
+  //   this.schedulerRegistry.addCronJob('save data', saveData);
+  //   saveData.start();
+  // }
 
   @ApiOperation({ summary: '25개 행정구 대기환경 REDIS 저장' })
   @Timeout(0)
