@@ -16,15 +16,17 @@ import { RouteService } from './route.service';
 @ApiTags('Routes')
 export class RouteController {
   constructor(private readonly routeService: RouteService) {}
+  @UseGuards(new LocalAuthGuard())
   @Get('/')
   @ApiOperation({ summary: '이동 경로 요약 정보' })
   @ApiOkResponse({ type: [RouteResponseDto] })
   public async getRoutes(
+    @User() user: Users,
     @Query() query: RequestRouteQuery,
   ): Promise<RouteResponseDto[]> {
     const params = this.adaptQuery(query);
-
-    return this.routeService.getRoutes(params);
+    console.log('user: ', user);
+    return this.routeService.getRoutes(user, params);
   }
 
   private adaptQuery(query: RequestRouteQuery): RequestRouteParamsDto {

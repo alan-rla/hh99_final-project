@@ -6,6 +6,10 @@ import { TermsCondition } from '../entities/termscondition';
 import { Tourist_Spot } from 'src/entities/Tourist_spot';
 import { Users } from 'src/entities/Users';
 import { User_Like } from 'src/entities/User_Like';
+import { RoutesInfo } from 'src/entities/routesinfo';
+import { CarRoute } from 'src/entities/car_route';
+import { BusRoute } from 'src/entities/bus_route';
+import { SubwayRoute } from 'src/entities/subway_route';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -28,8 +32,12 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         AreaLike,
         Tourist_Spot,
         TermsCondition,
+        RoutesInfo,
+        CarRoute,
+        BusRoute,
+        SubwayRoute,
       ],
-      migrations: ['dist/migrations/*{.ts,.js}'],
+      // migrations: ['dist/migrations/*{.ts,.js}'],
     };
   }
 }

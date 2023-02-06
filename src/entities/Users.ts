@@ -53,6 +53,6 @@ export class Users {
   @OneToMany(() => User_Like, user_like => user_like.User)
   UserLike: User_Like[];
 
-  // @OneToMany(() => RoutesInfo, routesInfo => routesInfo.User)
-  // routesInfo: RoutesInfo[];
+  @OneToMany(() => RoutesInfo, routesinfo => routesinfo.User)
+  routesinfo: RoutesInfo[];
 }

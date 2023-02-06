@@ -12,6 +12,7 @@ import { BusRoute } from 'src/entities/bus_route';
 import { CarRoute } from 'src/entities/car_route';
 import { SubwayRoute } from 'src/entities/subway_route';
 import { Users } from 'src/entities/Users';
+import { RouteType } from './types';
 
 @Module({
   imports: [
