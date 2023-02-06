@@ -28,10 +28,10 @@ export class RpollutionService {
       );
 
     const valueData = await lastValueFrom(data);
-    const key = 'pollution_data';
 
-    const pollutionData = await this.cacheManager.set(key, valueData);
-
-    return pollutionData;
+    for (const value of valueData) {
+      const key = `pollution_${value.MSRSTENAME}`;
+      await this.cacheManager.set(key, value);
+    }
   }
 }
