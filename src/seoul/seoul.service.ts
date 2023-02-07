@@ -42,6 +42,7 @@ export class SeoulService {
         this.cacheManager.set(
           `POPULATION_${AREA_NM}`,
           JSON.stringify(areaPopData),
+          0,
         ),
       ),
     );
@@ -53,6 +54,7 @@ export class SeoulService {
         this.cacheManager.set(
           `WEATHER_${AREA_NM}`,
           JSON.stringify(areaWeatherData),
+          0,
         ),
       ),
     );
@@ -64,6 +66,7 @@ export class SeoulService {
         this.cacheManager.set(
           `AIR_${AREA_NM}`,
           JSON.stringify(areaWeatherData),
+          0,
         ),
       ),
     );
@@ -75,6 +78,7 @@ export class SeoulService {
         this.cacheManager.set(
           `ROAD_AVG_${AREA_NM}`,
           JSON.stringify(avgRoadData),
+          0,
         ),
       ),
     );
@@ -86,6 +90,7 @@ export class SeoulService {
         this.cacheManager.set(
           `ROAD_TRAFFIC_${AREA_NM}`,
           JSON.stringify(roadTrafficStts),
+          0,
         ),
       ),
     );
@@ -93,7 +98,9 @@ export class SeoulService {
 
   async saveBusData(AREA_NM, busData) {
     await new Promise(resolve =>
-      resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
+      resolve(
+        this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData), 0),
+      ),
     );
   }
 
