@@ -8,7 +8,12 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiResponse,
+  ApiTags,
+  ApiOperation,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
 import { AreaService } from './area.service';
 import { FindAllAreaDto, FindOneAreaDto } from './dto/findall-area.dto';
@@ -16,6 +21,7 @@ import { LikeAreaDto } from './dto/like-area.dto';
 import { FindAreaPopDto } from './dto/population.dto';
 import { FindAreaWeatherDto } from './dto/weather.dto';
 import { FindAreaAirDto } from './dto/air.dto';
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
 
 @ApiTags('AREA')
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -84,7 +90,8 @@ export class AreaController {
     status: 200,
     description: '지역 좋아요',
   })
-  @UseGuards(new LocalAuthGuard())
+  @ApiCookieAuth('connect.sid')
+  @UseGuards(LoggedInGuard)
   @Get('like/:areaName')
   likeArea(@User() user: Users, @Param('areaName') areaName: string) {
     return this.areaService.likeArea(user, areaName);

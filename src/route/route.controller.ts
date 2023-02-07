@@ -1,7 +1,13 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiCookieAuth,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
 import { User } from 'src/common/decorators/user.decorator';
 import { Users } from 'src/entities/Users';
 
@@ -16,7 +22,8 @@ import { RouteService } from './route.service';
 @ApiTags('Routes')
 export class RouteController {
   constructor(private readonly routeService: RouteService) {}
-  @UseGuards(new LocalAuthGuard())
+  @ApiCookieAuth('connect.sid')
+  @UseGuards(LoggedInGuard)
   @Get('/')
   @ApiOperation({ summary: '이동 경로 요약 정보' })
   @ApiOkResponse({ type: [RouteResponseDto] })

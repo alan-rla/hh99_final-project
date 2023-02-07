@@ -10,6 +10,7 @@ import { RoutesInfo } from 'src/entities/routesinfo';
 import { CarRoute } from 'src/entities/car_route';
 import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
+import { Logo } from 'src/entities/Logo';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -36,6 +37,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         CarRoute,
         BusRoute,
         SubwayRoute,
+        Logo,
       ],
       // migrations: ['dist/migrations/*{.ts,.js}'],
     };

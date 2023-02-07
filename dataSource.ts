@@ -1,5 +1,7 @@
-import { DataSource } from 'typeorm';
 import dotenv from 'dotenv';
+dotenv.config();
+import { Logo } from './src/entities/Logo';
+import { DataSource } from 'typeorm';
 import { Users } from './src/entities/Users';
 import { Friends } from 'src/entities/Friends';
 import { AreaLike } from 'src/entities/AreaLike';
@@ -9,8 +11,6 @@ import { RoutesInfo } from 'src/entities/routesinfo';
 import { CarRoute } from 'src/entities/car_route';
 import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
-
-dotenv.config();
 
 const dataSource = new DataSource({
   type: 'mysql',
@@ -33,6 +33,7 @@ const dataSource = new DataSource({
     CarRoute,
     BusRoute,
     SubwayRoute,
+    Logo,
   ],
 });
 
