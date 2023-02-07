@@ -24,11 +24,13 @@ export class AreaService {
     private dataSource: DataSource,
   ) {}
 
+  //지역 전체 조회
   async findAllAreas() {
     const result = await this.areaLikeRepository.find();
     return result;
   }
 
+  //지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
   async findOneAreas(areaName: string) {
     const isArea = await this.areaLikeRepository.findOne({
       where: { AREA_NM: areaName },
@@ -62,7 +64,7 @@ export class AreaService {
     };
     return result;
   }
-
+  // 지역 인구 데이터 조회
   async findAreaPop(areaName: string) {
     const data = JSON.parse(
       await this.cacheManager.get(`POPULATION_${areaName}`),
@@ -87,6 +89,7 @@ export class AreaService {
     return result;
   }
 
+  //지역 날씨 조회
   async findAreaWeather(areaName: string) {
     const data = JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`));
     const weather = data['PRECPT_TYPE'];
@@ -107,17 +110,10 @@ export class AreaService {
     return result;
   }
 
+  // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
-    const guCode = await this.areaLikeRepository.findOne({
-      where: { AREA_NM: areaName },
-      select: { GU_CODE: true },
-    });
-    const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-    const data2 = JSON.parse(
-      await this.cacheManager.get(`AIR_ADDITION_${guCode.GU_CODE}`),
-    );
-
-    const airLvl = data1['AIR_IDX'];
+    const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+    const airLvl = data['AIR_IDX'];
     let img = '';
     if (airLvl === '좋음') {
       img = process.env.AIR_LVL1;
@@ -133,13 +129,13 @@ export class AreaService {
 
     const result = {
       AIR_IMG: img,
-      ...data1,
-      ...data2,
+      ...data,
     };
 
     return result;
   }
 
+  // 지역 좋아요 기능
   async likeArea(user: Users, areaName: string) {
     const isArea = await this.areaLikeRepository.findOne({
       where: { AREA_NM: areaName },

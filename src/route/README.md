@@ -5,7 +5,7 @@
 `Request`
 
 ```bash
-curl --location --request GET 'http://localhost:30183/routes?originLatitude=126.926493082645&originLongitude=37.6134436427887&destinationLatitude=127.126936754911&destinationLongitude=37.5004198786564'
+curl --location --request GET 'http://localhost:30183/routes?originLatitude=37.6134436427887&originLongitude=126.926493082645&destinationLatitude=37.5004198786564&destinationLongitude=127.126936754911'
 ```
 
 `Response`
