@@ -110,6 +110,7 @@ export class SeoulService {
           )['SeoulRtd.citydata']['CITYDATA'];
           // 지역 이름
           const AREA_NM = output['AREA_NM'];
+
           // 현재 인구 정보
           const CURRENT_POP_DATA = output['LIVE_PPLTN_STTS']['LIVE_PPLTN_STTS'];
           const CURRENT_TIME = dayjs(CURRENT_POP_DATA['PPLTN_TIME']);
@@ -198,15 +199,17 @@ export class SeoulService {
             AIR_MSG: AIR_MSG,
           };
 
-          // 지역 도로 정보 요약
-          const avgRoadData = {
-            AREA_NM: AREA_NM,
-            ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
-          };
-
-          // 지역 도로 정보 상세
-          const roadTrafficStts =
-            output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+          let avgRoadData: object = {};
+          let roadTrafficStts: object = {};
+          if (output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA']) {
+            // 지역 도로 정보 요약
+            avgRoadData = {
+              AREA_NM: AREA_NM,
+              ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
+            };
+            // 지역 도로 정보 상세
+            roadTrafficStts = output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
+          }
 
           //   버스 정보 전체
           let busData = {};
