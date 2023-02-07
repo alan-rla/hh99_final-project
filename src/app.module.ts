@@ -20,6 +20,7 @@ import { SeoulModule } from './seoul/seoul.module';
 import { RouteModule } from './route';
 import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
 import { LogoModule } from './logo/logo.module';
+import { SseModule } from './sse/sse.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -43,6 +44,7 @@ import { LogoModule } from './logo/logo.module';
     RouteModule,
     TouristSpotModule,
     LogoModule,
+    SseModule,
   ],
   controllers: [AppController],
   providers: [AppService, ConfigService],
