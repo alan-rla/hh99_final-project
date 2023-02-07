@@ -33,10 +33,21 @@ export interface RequestDirectionsRoute<IsSummary = boolean> {
   /**
    * 경로 요약 정보
    */
-  summary: RequestDirectionsRouteSummary<IsSummary>;
+  summary: RequestDirectionsRouteSummary;
+
+  /**
+   * 구간별 경로 정보
+   *
+   * 경유지가 존재할 경우 {경유지 수 + 1} 만큼의 섹션(경로 구간) 생성
+   * (예: 경유지 수가 2개인 경우 총 3개의 섹션 정보가 생성,
+   * section1: 출발지 → 경유지 1
+   * section2: 경유지 1 → 경유지 2
+   * section3: 경유지 2 → 목적지)
+   */
+  sections: RequestDirectionsRouteSection<IsSummary>[];
 }
 
-export interface RequestDirectionsRouteSummary<IsSummary = boolean> {
+export interface RequestDirectionsRouteSummary {
   /**
    * 출발지 정보
    */
@@ -71,17 +82,6 @@ export interface RequestDirectionsRouteSummary<IsSummary = boolean> {
    * 목적지까지 소요 시간(초)
    */
   duration: number;
-
-  /**
-   * 구간별 경로 정보
-   *
-   * 경유지가 존재할 경우 {경유지 수 + 1} 만큼의 섹션(경로 구간) 생성
-   * (예: 경유지 수가 2개인 경우 총 3개의 섹션 정보가 생성,
-   * section1: 출발지 → 경유지 1
-   * section2: 경유지 1 → 경유지 2
-   * section3: 경유지 2 → 목적지)
-   */
-  sections: RequestDirectionsRouteSummarySection<IsSummary>[];
 }
 
 export interface RequestDirectionsRouteSummaryCoordinate {
@@ -113,7 +113,7 @@ export interface RequestDirectionsRouteSummaryFare {
   toll: number;
 }
 
-export interface RequestDirectionsRouteSummarySection<IsSummary = boolean> {
+export interface RequestDirectionsRouteSection<IsSummary = boolean> {
   /**
    * 섹션 거리(미터)
    */
@@ -130,11 +130,11 @@ export interface RequestDirectionsRouteSummarySection<IsSummary = boolean> {
    * `summary`가 `false`인 경우에만 제공
    */
   roads: IsSummary extends true
-    ? RequestDirectionsRouteSummarySectionRoad[]
+    ? RequestDirectionsRouteSectionRoad[]
     : undefined;
 }
 
-export interface RequestDirectionsRouteSummarySectionRoad {
+export interface RequestDirectionsRouteSectionRoad {
   /**
    * 도로명
    */

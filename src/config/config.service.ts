@@ -6,6 +6,7 @@ import { TermsCondition } from '../entities/termscondition';
 import { Tourist_Spot } from 'src/entities/Tourist_spot';
 import { Users } from 'src/entities/Users';
 import { User_Like } from 'src/entities/User_Like';
+import { Logo } from 'src/entities/Logo';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -28,6 +29,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         AreaLike,
         Tourist_Spot,
         TermsCondition,
+        Logo,
       ],
       migrations: ['dist/migrations/*{.ts,.js}'],
     };
