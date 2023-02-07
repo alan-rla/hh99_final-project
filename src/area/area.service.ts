@@ -11,7 +11,6 @@ import { AreaLike } from 'src/entities/AreaLike';
 import { Repository, DataSource } from 'typeorm';
 import { User_Like } from 'src/entities/User_Like';
 import { Cache } from 'cache-manager';
-import crowdPicConverter from '../common/functions/pic.converter';
 import { PopPredict } from 'src/entities/PopPredict';
 import dayjs from 'dayjs';
 
@@ -49,23 +48,32 @@ export class AreaService {
           areaLike_id: isArea.areaLike_id,
         })
         .getCount();
-      const popData = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${areaName}`),
-      );
-      const weather = JSON.parse(
-        await this.cacheManager.get(`WEATHER_${areaName}`),
-      );
-      const road = JSON.parse(
-        await this.cacheManager.get(`ROAD_AVG_${areaName}`),
-      );
+
+      const popData =
+        JSON.parse(await this.cacheManager.get(`POPULATION_${areaName}`))[
+          'AREA_CONGEST_LVL'
+        ] ?? '점검중';
+      const weather =
+        JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`))[
+          'PCP_MSG'
+        ] ?? '점검중';
+
+      const air =
+        JSON.parse(await this.cacheManager.get(`AIR_${areaName}`))['AIR_IDX'] ??
+        '점검중';
+
+      const road =
+        JSON.parse(await this.cacheManager.get(`ROAD_AVG_${areaName}`))[
+          'ROAD_TRAFFIC_IDX'
+        ] ?? '점검중';
 
       const result = {
         ...isArea,
         likeCnt: findOneAreaLikeCount,
-        congestLvl: popData['AREA_CONGEST_LVL'],
-        weather: weather['PCP_MSG'],
-        air: weather['AIR_IDX'],
-        road: road['ROAD_TRAFFIC_IDX'],
+        congestLvl: popData,
+        weather: weather,
+        air: air,
+        road: road,
       };
       return result;
     } catch (err) {

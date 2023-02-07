@@ -41,7 +41,7 @@ export class SeoulService {
       resolve(
         this.cacheManager.set(
           `POPULATION_${AREA_NM}`,
-          JSON.stringify(areaPopData) ?? '점검중',
+          JSON.stringify(areaPopData),
         ),
       ),
     );
@@ -52,7 +52,7 @@ export class SeoulService {
       resolve(
         this.cacheManager.set(
           `WEATHER_${AREA_NM}`,
-          JSON.stringify(areaWeatherData) ?? '점검중',
+          JSON.stringify(areaWeatherData),
         ),
       ),
     );
@@ -63,7 +63,7 @@ export class SeoulService {
       resolve(
         this.cacheManager.set(
           `AIR_${AREA_NM}`,
-          JSON.stringify(areaWeatherData) ?? '점검중',
+          JSON.stringify(areaWeatherData),
         ),
       ),
     );
@@ -74,7 +74,7 @@ export class SeoulService {
       resolve(
         this.cacheManager.set(
           `ROAD_AVG_${AREA_NM}`,
-          JSON.stringify(avgRoadData) ?? '점검중',
+          JSON.stringify(avgRoadData),
         ),
       ),
     );
@@ -85,7 +85,7 @@ export class SeoulService {
       resolve(
         this.cacheManager.set(
           `ROAD_TRAFFIC_${AREA_NM}`,
-          JSON.stringify(roadTrafficStts) ?? '점검중',
+          JSON.stringify(roadTrafficStts),
         ),
       ),
     );
@@ -93,12 +93,7 @@ export class SeoulService {
 
   async saveBusData(AREA_NM, busData) {
     await new Promise(resolve =>
-      resolve(
-        this.cacheManager.set(
-          `BUS_${AREA_NM}`,
-          JSON.stringify(busData) ?? '점검중',
-        ),
-      ),
+      resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
     );
   }
 
@@ -173,59 +168,43 @@ export class SeoulService {
             POP_RECORD: POP_RECORD,
           };
 
-          let areaWeatherData = null;
-          let areaAirData = null;
-          if (output['WEATHER_STTS']['WEATHER_STTS']) {
-            const {
-              PM25_INDEX,
-              PM25,
-              PM10_INDEX,
-              PM10,
-              AIR_IDX,
-              AIR_IDX_MVL,
-              AIR_IDX_MAIN,
-              AIR_MSG,
-              ...weather
-            } = output['WEATHER_STTS']['WEATHER_STTS'];
+          const {
+            PM25_INDEX,
+            PM25,
+            PM10_INDEX,
+            PM10,
+            AIR_IDX,
+            AIR_IDX_MVL,
+            AIR_IDX_MAIN,
+            AIR_MSG,
+            ...weather
+          } = output['WEATHER_STTS']['WEATHER_STTS'];
 
-            // 날씨 정보
-            areaWeatherData = {
-              AREA_NM: AREA_NM,
-              ...weather,
-            };
+          // 날씨 정보
+          const areaWeatherData = weather ?? '점검중';
 
-            // 미세먼지 정보
-            areaAirData = {
-              AREA_NM: AREA_NM,
-              PM25_INDEX: PM25_INDEX,
-              PM25: PM25,
-              PM10_INDEX: PM10_INDEX,
-              PM10: PM10,
-              AIR_IDX: AIR_IDX,
-              AIR_IDX_MVL: AIR_IDX_MVL,
-              AIR_IDX_MAIN: AIR_IDX_MAIN,
-              AIR_MSG: AIR_MSG,
-            };
-          }
+          // 미세먼지 정보
+          const areaAirData = {
+            AREA_NM: AREA_NM ?? '점검중',
+            PM25_INDEX: PM25_INDEX ?? '점검중',
+            PM25: PM25 ?? '점검중',
+            PM10_INDEX: PM10_INDEX ?? '점검중',
+            PM10: PM10 ?? '점검중',
+            AIR_IDX: AIR_IDX ?? '점검중',
+            AIR_IDX_MVL: AIR_IDX_MVL ?? '점검중',
+            AIR_IDX_MAIN: AIR_IDX_MAIN ?? '점검중',
+            AIR_MSG: AIR_MSG ?? '점검중',
+          };
 
-          let avgRoadData = null;
-          // const roadTrafficStts: object = {};
-          if (output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA']) {
-            // 지역 도로 정보 요약
-            avgRoadData = {
-              AREA_NM: AREA_NM,
-              ...output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'],
-            };
-            // 상세정보 현재 미사용으로 주석 처리
-            // 지역 도로 정보 상세
-            // roadTrafficStts = output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'];
-          }
+          // 도로 정보
+          const avgRoadData =
+            output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'] ?? '점검중';
+          // const roadTrafficStts = output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'] ?? '점검중';
 
           //   버스 정보 전체
-          let busData = null;
-          if (output['BUS_STN_STTS']['BUS_STN_STTS']) {
-            busData = output['BUS_STN_STTS']['BUS_STN_STTS'];
-          }
+          const busData = output['BUS_STN_STTS']['BUS_STN_STTS'] ?? '점검중';
+
+          console.log(output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'] ?? '점검중');
 
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
@@ -237,6 +216,7 @@ export class SeoulService {
             this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
+          console.log(AREA_NM);
         }
       } catch (err) {
         console.log(err);
