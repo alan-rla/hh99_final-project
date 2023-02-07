@@ -7,6 +7,7 @@ import { Tourist_Spot } from 'src/entities/Tourist_spot';
 import { Users } from 'src/entities/Users';
 import { User_Like } from 'src/entities/User_Like';
 import { Logo } from 'src/entities/Logo';
+import { PopPredict } from 'src/entities/PopPredict';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -30,6 +31,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         Tourist_Spot,
         TermsCondition,
         Logo,
+        PopPredict,
       ],
       migrations: ['dist/migrations/*{.ts,.js}'],
     };
