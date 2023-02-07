@@ -3,7 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { SseService } from './sse.service';
 import { sendMessage } from './type/sendMessage';
 import { Controller, Sse, UseInterceptors } from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { interval, Observable, map } from 'rxjs';
 
 @ApiTags('SSE')
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -11,8 +11,8 @@ import { Observable } from 'rxjs';
 export class SseController {
   constructor(private readonly sseService: SseService) {}
 
-  @Sse('event')
-  sendEvent(): Observable<sendMessage> {
-    return;
+  @Sse('sse')
+  sse(): Observable<sendMessage> {
+    return interval(1000).pipe(map(_ => ({ data: { hello: 'test' } })));
   }
 }
