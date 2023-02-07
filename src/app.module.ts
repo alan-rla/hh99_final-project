@@ -24,7 +24,7 @@ import { LogoModule } from './logo/logo.module';
 const CACHE_URL = (stage = process.env.NODE_ENV) => {
   switch (stage) {
     case 'development':
-      return 'http://127.0.0.1:6379';
+      return '127.0.0.1';
     case 'production':
       return process.env.ELASTICACHE;
   }
@@ -43,7 +43,8 @@ const CACHE_URL = (stage = process.env.NODE_ENV) => {
     CacheModule.register({
       isGlobal: true,
       store: redisStore,
-      url: CACHE_URL(),
+      host: CACHE_URL(),
+      port: 6379,
       ttl: 43200,
     }),
     ScheduleModule.forRoot(),
