@@ -204,8 +204,6 @@ export class SeoulService {
           //   버스 정보 전체
           const busData = output['BUS_STN_STTS']['BUS_STN_STTS'] ?? '점검중';
 
-          console.log(output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'] ?? '점검중');
-
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
@@ -216,7 +214,6 @@ export class SeoulService {
             this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
-          console.log(AREA_NM);
         }
       } catch (err) {
         console.log(err);
