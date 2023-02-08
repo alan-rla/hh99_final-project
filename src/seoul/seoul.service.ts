@@ -123,9 +123,10 @@ export class SeoulService {
           const CURRENT_TIME = dayjs(CURRENT_POP_DATA['PPLTN_TIME']);
           // 요약 정보 저장용(POP_RECORD) 객체
           const CURRENT_POP_RECORD = {
-            time: CURRENT_POP_DATA['PPLTN_TIME'],
-            congestion: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
-            population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
+            time: CURRENT_POP_DATA['PPLTN_TIME'] + ':00',
+            // congestion: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
+            // population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
+            population: CURRENT_POP_DATA['AREA_PPLTN_MAX'],
           };
 
           // 현재 REDIS 저장된 인구 정보 호출 (없으면 PAST_DATA = null)
