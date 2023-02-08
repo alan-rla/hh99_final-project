@@ -20,6 +20,16 @@ import { SeoulModule } from './seoul/seoul.module';
 import { RouteModule } from './route';
 import { TouristSpotModule } from './tourist_spot/tourist_spot.module';
 import { LogoModule } from './logo/logo.module';
+
+const CACHE_URL = (stage = process.env.NODE_ENV) => {
+  switch (stage) {
+    case 'development':
+      return '127.0.0.1';
+    case 'production':
+      return process.env.ELASTICACHE;
+  }
+};
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -33,7 +43,7 @@ import { LogoModule } from './logo/logo.module';
     CacheModule.register({
       isGlobal: true,
       store: redisStore,
-      host: '127.0.0.1',
+      host: CACHE_URL(),
       port: 6379,
       ttl: 43200,
     }),

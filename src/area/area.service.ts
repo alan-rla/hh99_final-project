@@ -32,7 +32,6 @@ export class AreaService {
     const result = await this.areaLikeRepository.find();
     return result;
   }
-
   //지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
   async findOneAreas(areaName: string) {
     try {
@@ -67,6 +66,8 @@ export class AreaService {
           'ROAD_TRAFFIC_IDX'
         ] ?? '점검중';
 
+      const areaVid = process.env.AREA_VID;
+
       const result = {
         ...isArea,
         likeCnt: findOneAreaLikeCount,
@@ -74,6 +75,7 @@ export class AreaService {
         weather: weather,
         air: air,
         road: road,
+        areaVid: areaVid,
       };
       return result;
     } catch (err) {
@@ -83,17 +85,17 @@ export class AreaService {
   // 지역 인구 데이터 조회
   async findAreaPop(areaName: string) {
     try {
-      const data = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${areaName}`),
-      );
-
-      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
-
       const dong_code = await this.areaLikeRepository.findOne({
         where: { AREA_NM: areaName },
         select: ['DONG_CODE'],
       });
+      if (!dong_code) throw new HttpException('wrong place name', 404);
       const dong = JSON.parse(dong_code['DONG_CODE']);
+
+      const data = JSON.parse(
+        await this.cacheManager.get(`POPULATION_${areaName}`),
+      );
+      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
 
       for (let i = 1; i <= 12; i++) {
         const futureTime = currentTime
@@ -140,6 +142,7 @@ export class AreaService {
       const data = JSON.parse(
         await this.cacheManager.get(`WEATHER_${areaName}`),
       );
+      if (!data) throw new HttpException('wrong place name', 404);
       const weather = data['PRECPT_TYPE'];
       let img = '';
       if (weather === '없음') {
@@ -151,7 +154,7 @@ export class AreaService {
       }
 
       const result = {
-        WEATHER_IMG: img,
+        날씨이미지: img,
         ...data,
       };
 
@@ -160,12 +163,20 @@ export class AreaService {
       console.log(err);
     }
   }
-
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
     try {
-      const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      const airLvl = data['AIR_IDX'];
+      const gu_code = await this.areaLikeRepository.findOne({
+        where: { AREA_NM: areaName },
+        select: ['GU_CODE'],
+      });
+      if (!gu_code) throw new HttpException('wrong place name', 404);
+      const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+      const data2 = JSON.parse(
+        await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
+      );
+
+      const airLvl = data1['대기환경등급'];
       let img = '';
       if (airLvl === '좋음') {
         img = process.env.AIR_LVL1;
@@ -180,8 +191,9 @@ export class AreaService {
       }
 
       const result = {
-        AIR_IMG: img,
-        ...data,
+        대기환경이미지: img,
+        ...data1,
+        ...data2,
       };
 
       return result;
@@ -189,7 +201,6 @@ export class AreaService {
       console.log(err);
     }
   }
-
   // 지역 좋아요 기능
   async likeArea(user: Users, areaName: string) {
     const isArea = await this.areaLikeRepository.findOne({

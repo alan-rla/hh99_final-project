@@ -42,6 +42,7 @@ export class SeoulService {
         this.cacheManager.set(
           `POPULATION_${AREA_NM}`,
           JSON.stringify(areaPopData),
+          0,
         ),
       ),
     );
@@ -53,6 +54,7 @@ export class SeoulService {
         this.cacheManager.set(
           `WEATHER_${AREA_NM}`,
           JSON.stringify(areaWeatherData),
+          0,
         ),
       ),
     );
@@ -64,6 +66,7 @@ export class SeoulService {
         this.cacheManager.set(
           `AIR_${AREA_NM}`,
           JSON.stringify(areaWeatherData),
+          0,
         ),
       ),
     );
@@ -75,6 +78,7 @@ export class SeoulService {
         this.cacheManager.set(
           `ROAD_AVG_${AREA_NM}`,
           JSON.stringify(avgRoadData),
+          0,
         ),
       ),
     );
@@ -86,6 +90,7 @@ export class SeoulService {
         this.cacheManager.set(
           `ROAD_TRAFFIC_${AREA_NM}`,
           JSON.stringify(roadTrafficStts),
+          0,
         ),
       ),
     );
@@ -93,7 +98,9 @@ export class SeoulService {
 
   async saveBusData(AREA_NM, busData) {
     await new Promise(resolve =>
-      resolve(this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData))),
+      resolve(
+        this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData), 0),
+      ),
     );
   }
 
@@ -116,9 +123,10 @@ export class SeoulService {
           const CURRENT_TIME = dayjs(CURRENT_POP_DATA['PPLTN_TIME']);
           // 요약 정보 저장용(POP_RECORD) 객체
           const CURRENT_POP_RECORD = {
-            time: CURRENT_POP_DATA['PPLTN_TIME'],
-            congestion: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
-            population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
+            time: CURRENT_POP_DATA['PPLTN_TIME'] + ':00',
+            // congestion: CURRENT_POP_DATA['AREA_CONGEST_LVL'],
+            // population: `${CURRENT_POP_DATA['AREA_PPLTN_MIN']}~${CURRENT_POP_DATA['AREA_PPLTN_MAX']}명`,
+            population: CURRENT_POP_DATA['AREA_PPLTN_MAX'],
           };
 
           // 현재 REDIS 저장된 인구 정보 호출 (없으면 PAST_DATA = null)
@@ -180,20 +188,58 @@ export class SeoulService {
             ...weather
           } = output['WEATHER_STTS']['WEATHER_STTS'];
 
+          let forecast = [];
+          if (weather['FCST24HOURS']['FCST24HOURS']) {
+            for (const data of weather['FCST24HOURS']['FCST24HOURS']) {
+              const result = {
+                예보시간: data['FCST_DT'].toString().substring(8, 10) + '시',
+                기온: data['TEMP'],
+                강수량: data['PRECIPITATION'],
+                강수형태: data['PRECPT_TYPE'],
+                강수확률: data['RAIN_CHANCE'],
+                날씨: data['SKY_STTS'],
+              };
+
+              forecast.push(result);
+            }
+          } else {
+            forecast = ['점검중'];
+          }
+
+          const weatherData = {
+            날씨집계시간: weather['WEATHER_TIME'] ?? '점검중',
+            기온: weather['TEMP'] ?? '점검중',
+            체감기온: weather['SENSIBLE_TEMP'] ?? '점검중',
+            최고기온: weather['MAX_TEMP'] ?? '점검중',
+            최저기온: weather['MIN_TEMP'] ?? '점검중',
+            습도: weather['HUMIDITY'] ?? '점검중',
+            풍향: weather['WIND_DIRCT'] ?? '점검중',
+            풍속: weather['WIND_SPD'] ?? '점검중',
+            강수량: weather['PRECIPITATION'] ?? '점검중',
+            강수형태: weather['PRECPT_TYPE'] ?? '점검중',
+            강수메세지: weather['PCP_MSG'] ?? '점검중',
+            일출: weather['SUNRISE'] ?? '점검중',
+            일몰: weather['SUNSET'] ?? '점검중',
+            자외선단계: weather['UV_INDEX_LVL'] ?? '점검중',
+            자외선지수: weather['UV_INDEX'] ?? '점검중',
+            자외선메세지: weather['UV_MSG'] ?? '점검중',
+            일기예보: forecast,
+          };
+
           // 날씨 정보
-          const areaWeatherData = weather ?? '점검중';
+          const areaWeatherData = weatherData;
 
           // 미세먼지 정보
           const areaAirData = {
-            AREA_NM: AREA_NM ?? '점검중',
-            PM25_INDEX: PM25_INDEX ?? '점검중',
-            PM25: PM25 ?? '점검중',
-            PM10_INDEX: PM10_INDEX ?? '점검중',
-            PM10: PM10 ?? '점검중',
-            AIR_IDX: AIR_IDX ?? '점검중',
-            AIR_IDX_MVL: AIR_IDX_MVL ?? '점검중',
-            AIR_IDX_MAIN: AIR_IDX_MAIN ?? '점검중',
-            AIR_MSG: AIR_MSG ?? '점검중',
+            지역이름: AREA_NM ?? '점검중',
+            초미세먼지지수: PM25_INDEX ?? '점검중',
+            초미세먼지: PM25 ?? '점검중',
+            미세먼지지수: PM10_INDEX ?? '점검중',
+            미세먼지: PM10 ?? '점검중',
+            대기환경등급: AIR_IDX ?? '점검중',
+            대기환경지수: AIR_IDX_MVL ?? '점검중',
+            지수결정물질: AIR_IDX_MAIN ?? '점검중',
+            등급메세지: AIR_MSG ?? '점검중',
           };
 
           // 도로 정보
@@ -203,8 +249,6 @@ export class SeoulService {
 
           //   버스 정보 전체
           const busData = output['BUS_STN_STTS']['BUS_STN_STTS'] ?? '점검중';
-
-          console.log(output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'] ?? '점검중');
 
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
@@ -216,10 +260,8 @@ export class SeoulService {
             this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
-          console.log(AREA_NM);
         }
       } catch (err) {
-        console.log(err);
         setTimeout(() => {
           this.dataCache(rawDatas);
         }, 100000);
@@ -259,7 +301,6 @@ export class SeoulService {
       await this.dataCache(rawDatas);
     }
   }
-
   async saveSeoulAirData() {
     const url = `http://openapi.seoul.go.kr:8088/${process.env.AIR_KEY}/xml/ListAirQualityByDistrictService/1/25/`;
     const stream = this.httpService.get(encodeURI(url));
@@ -276,10 +317,10 @@ export class SeoulService {
     for (const data of datas) {
       const GU_CODE = data['MSRSTENAME'];
       const airData = {
-        NITROGEN: data['NITROGEN'],
-        OZONE: data['OZONE'],
-        CARBON: data['CARBON'],
-        SULFUROUS: data['SULFUROUS'],
+        이산화질소: data['NITROGEN'],
+        오존농도: data['OZONE'],
+        일산화탄소: data['CARBON'],
+        아황산가스: data['SULFUROUS'],
       };
       await this.cacheManager.set(
         `AIR_ADDITION_${GU_CODE}`,
