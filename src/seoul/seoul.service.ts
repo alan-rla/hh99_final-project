@@ -262,7 +262,6 @@ export class SeoulService {
           Promise.all(cacheList);
         }
       } catch (err) {
-        console.log(err);
         setTimeout(() => {
           this.dataCache(rawDatas);
         }, 100000);
