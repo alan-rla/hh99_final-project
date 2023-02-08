@@ -45,7 +45,7 @@ const CACHE_URL = (stage = process.env.NODE_ENV) => {
       store: redisStore,
       host: CACHE_URL(),
       port: 6379,
-      ttl: 43200,
+      ttl: 3600,
     }),
     ScheduleModule.forRoot(),
     AreaModule,
