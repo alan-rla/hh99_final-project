@@ -212,6 +212,7 @@ export class SeoulService {
             체감기온: weather['SENSIBLE_TEMP'] ?? '점검중',
             최고기온: weather['MAX_TEMP'] ?? '점검중',
             최저기온: weather['MIN_TEMP'] ?? '점검중',
+            습도: weather['HUMIDITY'] ?? '점검중',
             풍향: weather['WIND_DIRCT'] ?? '점검중',
             풍속: weather['WIND_SPD'] ?? '점검중',
             강수량: weather['PRECIPITATION'] ?? '점검중',

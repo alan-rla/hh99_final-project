@@ -172,7 +172,6 @@ export class AreaService {
         where: { AREA_NM: areaName },
         select: ['GU_CODE'],
       });
-      console.log(gu_code);
 
       const data2 = JSON.parse(
         await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
