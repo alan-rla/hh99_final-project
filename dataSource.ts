@@ -13,6 +13,10 @@ import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
 import { PopPredict } from 'src/entities/PopPredict';
 import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
+import { SeoulWeatherInfo } from 'src/entities/seoulWeatherInfo';
+import { SeoulRoadInfo } from 'src/entities/seoulRoadInfo';
+import { SeoulPopInfo } from 'src/entities/seoulPopInfo';
+import { SeoulPMInfo } from 'src/entities/seoulPMInfo';
 
 dotenv.config();
 
@@ -41,6 +45,10 @@ const dataSource = new DataSource({
     Logo,
     PopPredict,
     SeoulAirInfo,
+    SeoulWeatherInfo,
+    SeoulRoadInfo,
+    SeoulPopInfo,
+    SeoulPMInfo,
   ],
 });
 

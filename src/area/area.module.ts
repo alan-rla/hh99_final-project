@@ -7,6 +7,10 @@ import { AreaLike } from 'src/entities/AreaLike';
 import { User_Like } from 'src/entities/User_Like';
 import { PopPredict } from 'src/entities/PopPredict';
 import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
+import { SeoulWeatherInfo } from 'src/entities/seoulWeatherInfo';
+import { SeoulRoadInfo } from 'src/entities/seoulRoadInfo';
+import { SeoulPopInfo } from 'src/entities/seoulPopInfo';
+import { SeoulPMInfo } from 'src/entities/seoulPMInfo';
 
 @Module({
   imports: [
@@ -16,6 +20,10 @@ import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
       User_Like,
       PopPredict,
       SeoulAirInfo,
+      SeoulWeatherInfo,
+      SeoulRoadInfo,
+      SeoulPopInfo,
+      SeoulPMInfo,
     ]),
   ],
   controllers: [AreaController],

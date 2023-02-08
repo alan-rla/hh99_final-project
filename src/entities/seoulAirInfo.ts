@@ -6,15 +6,6 @@ export class SeoulAirInfo {
   @Column('varchar', { name: 'guName', primary: true })
   guName: string;
 
-  @Column('float', { name: 'NITROGEN' })
-  NITROGEN: number;
-
-  @Column('float', { name: 'OZONE' })
-  OZONE: number;
-
-  @Column('float', { name: 'CARBON' })
-  CARBON: number;
-
-  @Column('float', { name: 'SULFUROUS' })
-  SULFUROUS: number;
+  @Column('varchar', { name: 'cache', length: 'MAX' })
+  cache: string;
 }
