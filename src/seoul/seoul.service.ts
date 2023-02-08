@@ -192,15 +192,15 @@ export class SeoulService {
 
           // 미세먼지 정보
           const areaAirData = {
-            AREA_NM: AREA_NM ?? '점검중',
-            PM25_INDEX: PM25_INDEX ?? '점검중',
-            PM25: PM25 ?? '점검중',
-            PM10_INDEX: PM10_INDEX ?? '점검중',
-            PM10: PM10 ?? '점검중',
-            AIR_IDX: AIR_IDX ?? '점검중',
-            AIR_IDX_MVL: AIR_IDX_MVL ?? '점검중',
-            AIR_IDX_MAIN: AIR_IDX_MAIN ?? '점검중',
-            AIR_MSG: AIR_MSG ?? '점검중',
+            지역이름: AREA_NM ?? '점검중',
+            초미세먼지지수: PM25_INDEX ?? '점검중',
+            초미세먼지: PM25 ?? '점검중',
+            미세먼지지수: PM10_INDEX ?? '점검중',
+            미세먼지: PM10 ?? '점검중',
+            대기환경등급: AIR_IDX ?? '점검중',
+            대기환경지수: AIR_IDX_MVL ?? '점검중',
+            지수결정물질: AIR_IDX_MAIN ?? '점검중',
+            등급메세지: AIR_MSG ?? '점검중',
           };
 
           // 도로 정보
@@ -280,10 +280,10 @@ export class SeoulService {
     for (const data of datas) {
       const GU_CODE = data['MSRSTENAME'];
       const airData = {
-        NITROGEN: data['NITROGEN'],
-        OZONE: data['OZONE'],
-        CARBON: data['CARBON'],
-        SULFUROUS: data['SULFUROUS'],
+        이산화질소: data['NITROGEN'],
+        오존농도: data['OZONE'],
+        일산화탄소: data['CARBON'],
+        아황산가스: data['SULFUROUS'],
       };
       await this.cacheManager.set(
         `AIR_ADDITION_${GU_CODE}`,
