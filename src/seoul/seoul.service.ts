@@ -193,7 +193,7 @@ export class SeoulService {
             for (const data of weather['FCST24HOURS']['FCST24HOURS']) {
               const result = {
                 예보시간: data['FCST_DT'].toString().substring(8, 10) + '시',
-                기온: data['TEMP'].toString() + '℃',
+                기온: data['TEMP'],
                 강수량: data['PRECIPITATION'],
                 강수형태: data['PRECPT_TYPE'],
                 강수확률: data['RAIN_CHANCE'],
