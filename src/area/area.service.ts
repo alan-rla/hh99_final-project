@@ -164,8 +164,16 @@ export class AreaService {
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
     try {
-      const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      const airLvl = data['AIR_IDX'];
+      const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+      const gu_code = await this.areaLikeRepository.findOne({
+        where: { AREA_NM: areaName },
+        select: ['GU_CODE'],
+      });
+      const data2 = JSON.parse(
+        await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
+      );
+
+      const airLvl = data1['AIR_IDX'];
       let img = '';
       if (airLvl === '좋음') {
         img = process.env.AIR_LVL1;
@@ -181,7 +189,8 @@ export class AreaService {
 
       const result = {
         AIR_IMG: img,
-        ...data,
+        ...data1,
+        ...data2,
       };
 
       return result;
