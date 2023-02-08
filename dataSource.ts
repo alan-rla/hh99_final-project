@@ -11,6 +11,9 @@ import { RoutesInfo } from 'src/entities/routesinfo';
 import { CarRoute } from 'src/entities/car_route';
 import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
+import { PopPredict } from 'src/entities/PopPredict';
+
+dotenv.config();
 
 const dataSource = new DataSource({
   type: 'mysql',
@@ -34,6 +37,8 @@ const dataSource = new DataSource({
     BusRoute,
     SubwayRoute,
     Logo,
+    Logo,
+    PopPredict,
   ],
 });
 

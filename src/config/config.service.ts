@@ -11,6 +11,7 @@ import { CarRoute } from 'src/entities/car_route';
 import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
 import { Logo } from 'src/entities/Logo';
+import { PopPredict } from 'src/entities/PopPredict';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -38,6 +39,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         BusRoute,
         SubwayRoute,
         Logo,
+        PopPredict,
       ],
       // migrations: ['dist/migrations/*{.ts,.js}'],
     };

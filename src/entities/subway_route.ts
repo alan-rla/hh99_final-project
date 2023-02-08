@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { RoutesInfo } from './routesinfo';
 @Entity({ schema: 'hh99_final-project', name: 'subway_route' })
 export class SubwayRoute {
   @PrimaryGeneratedColumn({ type: 'int' })
@@ -14,4 +21,11 @@ export class SubwayRoute {
 
   @Column('varchar', { name: 'routeNames' }) //출발지로부터 경로 이름 또는 노선
   routeNames: string;
+
+  // @OneToOne(type => RoutesInfo)
+  // @JoinColumn({
+  //   name: 'route_id',
+  //   referencedColumnName: 'id',
+  // })
+  // route_id: RoutesInfo;
 }

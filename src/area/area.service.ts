@@ -11,7 +11,8 @@ import { AreaLike } from 'src/entities/AreaLike';
 import { Repository, DataSource } from 'typeorm';
 import { User_Like } from 'src/entities/User_Like';
 import { Cache } from 'cache-manager';
-import crowdPicConverter from '../common/functions/pic.converter';
+import { PopPredict } from 'src/entities/PopPredict';
+import dayjs from 'dayjs';
 
 @Injectable()
 export class AreaService {
@@ -21,6 +22,8 @@ export class AreaService {
     private areaLikeRepository: Repository<AreaLike>,
     @InjectRepository(User_Like)
     private userLikeRepository: Repository<User_Like>,
+    @InjectRepository(PopPredict)
+    private popPredictRepository: Repository<PopPredict>,
     private dataSource: DataSource,
   ) {}
 
@@ -31,106 +34,158 @@ export class AreaService {
   }
   //지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
   async findOneAreas(areaName: string) {
-    const isArea = await this.areaLikeRepository.findOne({
-      where: { AREA_NM: areaName },
-    });
-    if (!isArea) throw new HttpException('wrong place name', 404);
+    try {
+      const isArea = await this.areaLikeRepository.findOne({
+        where: { AREA_NM: areaName },
+      });
+      if (!isArea) throw new HttpException('wrong place name', 404);
 
-    const findOneAreaLikeCount = await this.userLikeRepository
-      .createQueryBuilder('user_like')
-      .leftJoinAndSelect('user_like.Area', 'areaLike')
-      .where('user_like.Area = :areaLike_id', {
-        areaLike_id: isArea.areaLike_id,
-      })
-      .getCount();
-    const popData = JSON.parse(
-      await this.cacheManager.get(`POPULATION_${areaName}`),
-    );
-    const weather = JSON.parse(
-      await this.cacheManager.get(`WEATHER_${areaName}`),
-    );
-    const road = JSON.parse(
-      await this.cacheManager.get(`ROAD_AVG_${areaName}`),
-    );
+      const findOneAreaLikeCount = await this.userLikeRepository
+        .createQueryBuilder('user_like')
+        .leftJoinAndSelect('user_like.Area', 'areaLike')
+        .where('user_like.Area = :areaLike_id', {
+          areaLike_id: isArea.areaLike_id,
+        })
+        .getCount();
 
-    const result = {
-      ...isArea,
-      likeCnt: findOneAreaLikeCount,
-      congestLvl: popData['AREA_CONGEST_LVL'],
-      weather: weather['PCP_MSG'],
-      air: weather['AIR_IDX'],
-      road: road['ROAD_TRAFFIC_IDX'],
-    };
-    return result;
+      const popData =
+        JSON.parse(await this.cacheManager.get(`POPULATION_${areaName}`))[
+          'AREA_CONGEST_LVL'
+        ] ?? '점검중';
+      const weather =
+        JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`))[
+          'PCP_MSG'
+        ] ?? '점검중';
+
+      const air =
+        JSON.parse(await this.cacheManager.get(`AIR_${areaName}`))['AIR_IDX'] ??
+        '점검중';
+
+      const road =
+        JSON.parse(await this.cacheManager.get(`ROAD_AVG_${areaName}`))[
+          'ROAD_TRAFFIC_IDX'
+        ] ?? '점검중';
+
+      const result = {
+        ...isArea,
+        likeCnt: findOneAreaLikeCount,
+        congestLvl: popData,
+        weather: weather,
+        air: air,
+        road: road,
+      };
+      return result;
+    } catch (err) {
+      console.log(err);
+    }
   }
   // 지역 인구 데이터 조회
   async findAreaPop(areaName: string) {
-    const data = JSON.parse(
-      await this.cacheManager.get(`POPULATION_${areaName}`),
-    );
-    const crowdLvl = data['AREA_CONGEST_LVL'];
-    let img = '';
-    if (crowdLvl === '여유') {
-      img = process.env.CROWD_LVL1;
-    } else if (crowdLvl === '보통') {
-      img = process.env.CROWD_LVL2;
-    } else if (crowdLvl === '약간 붐빔') {
-      img = process.env.CROWD_LVL3;
-    } else {
-      img = process.env.CROWD_LVL4;
+    try {
+      const data = JSON.parse(
+        await this.cacheManager.get(`POPULATION_${areaName}`),
+      );
+
+      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
+
+      const dong_code = await this.areaLikeRepository.findOne({
+        where: { AREA_NM: areaName },
+        select: ['DONG_CODE'],
+      });
+      const dong = JSON.parse(dong_code['DONG_CODE']);
+
+      for (let i = 1; i <= 12; i++) {
+        const futureTime = currentTime
+          .add(i, 'hour')
+          .format('YYYY-MM-DD HH:mm:ss');
+
+        const rawData = await this.popPredictRepository.findOne({
+          where: { 시간: futureTime },
+          select: dong,
+        });
+
+        const pop = Math.ceil(
+          Object.values(rawData).reduce((a, b) => a + b, 0),
+        );
+        data.POP_RECORD.push({ time: futureTime, population: pop });
+      }
+
+      const crowdLvl = data['AREA_CONGEST_LVL'];
+      let img = '';
+      if (crowdLvl === '여유') {
+        img = process.env.CROWD_LVL1;
+      } else if (crowdLvl === '보통') {
+        img = process.env.CROWD_LVL2;
+      } else if (crowdLvl === '약간 붐빔') {
+        img = process.env.CROWD_LVL3;
+      } else {
+        img = process.env.CROWD_LVL4;
+      }
+
+      const result = {
+        POP_IMG: img,
+        ...data,
+      };
+
+      return result;
+    } catch (err) {
+      console.log(err);
     }
-
-    const result = {
-      POP_IMG: img,
-      ...data,
-    };
-
-    return result;
   }
 
   //지역 날씨 조회
   async findAreaWeather(areaName: string) {
-    const data = JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`));
-    const weather = data['PRECPT_TYPE'];
-    let img = '';
-    if (weather === '없음') {
-      img = process.env.WEATHER_NORMAL;
-    } else if (weather === '비') {
-      img = process.env.WEATHER_RANIY;
-    } else {
-      img = process.env.WEATHER_SNOWY;
+    try {
+      const data = JSON.parse(
+        await this.cacheManager.get(`WEATHER_${areaName}`),
+      );
+      const weather = data['PRECPT_TYPE'];
+      let img = '';
+      if (weather === '없음') {
+        img = process.env.WEATHER_NORMAL;
+      } else if (weather === '비') {
+        img = process.env.WEATHER_RANIY;
+      } else {
+        img = process.env.WEATHER_SNOWY;
+      }
+
+      const result = {
+        WEATHER_IMG: img,
+        ...data,
+      };
+
+      return result;
+    } catch (err) {
+      console.log(err);
     }
-
-    const result = {
-      WEATHER_IMG: img,
-      ...data,
-    };
-
-    return result;
   }
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
-    const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-    const airLvl = data['AIR_IDX'];
-    let img = '';
-    if (airLvl === '좋음') {
-      img = process.env.AIR_LVL1;
-    } else if (airLvl === '보통') {
-      img = process.env.AIR_LVL2;
-    } else if (airLvl === '나쁨') {
-      img = process.env.AIR_LVL3;
-    } else if (airLvl === '매우 나쁨') {
-      img = process.env.AIR_LVL4;
-    } else {
-      img = process.env.AIR_MAINTENANCE;
+    try {
+      const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+      const airLvl = data['AIR_IDX'];
+      let img = '';
+      if (airLvl === '좋음') {
+        img = process.env.AIR_LVL1;
+      } else if (airLvl === '보통') {
+        img = process.env.AIR_LVL2;
+      } else if (airLvl === '나쁨') {
+        img = process.env.AIR_LVL3;
+      } else if (airLvl === '매우 나쁨') {
+        img = process.env.AIR_LVL4;
+      } else {
+        img = process.env.AIR_MAINTENANCE;
+      }
+
+      const result = {
+        AIR_IMG: img,
+        ...data,
+      };
+
+      return result;
+    } catch (err) {
+      console.log(err);
     }
-
-    const result = {
-      AIR_IMG: img,
-      ...data,
-    };
-
-    return result;
   }
   // 지역 좋아요 기능
   async likeArea(user: Users, areaName: string) {
