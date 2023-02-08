@@ -12,12 +12,17 @@ import areaList from '../common/area-list';
 import removeJsonTextAttribute from '../common/functions/xml.value.converter';
 import dayjs from 'dayjs';
 import { PopulationDto } from './dto/population.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SeoulService {
   constructor(
     private readonly httpService: HttpService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectRepository(SeoulAirInfo)
+    private seoulAirRepository: Repository<SeoulAirInfo>,
   ) {}
 
   async getMultipleDatas(urls: string[]) {
@@ -80,26 +85,6 @@ export class SeoulService {
           JSON.stringify(avgRoadData),
           0,
         ),
-      ),
-    );
-  }
-
-  async saveRoadTrafficStts(AREA_NM, roadTrafficStts) {
-    await new Promise(resolve =>
-      resolve(
-        this.cacheManager.set(
-          `ROAD_TRAFFIC_${AREA_NM}`,
-          JSON.stringify(roadTrafficStts),
-          0,
-        ),
-      ),
-    );
-  }
-
-  async saveBusData(AREA_NM, busData) {
-    await new Promise(resolve =>
-      resolve(
-        this.cacheManager.set(`BUS_${AREA_NM}`, JSON.stringify(busData), 0),
       ),
     );
   }
@@ -245,19 +230,12 @@ export class SeoulService {
           // 도로 정보
           const avgRoadData =
             output['ROAD_TRAFFIC_STTS']['AVG_ROAD_DATA'] ?? '점검중';
-          // const roadTrafficStts = output['ROAD_TRAFFIC_STTS']['ROAD_TRAFFIC_STTS'] ?? '점검중';
-
-          //   버스 정보 전체
-          const busData = output['BUS_STN_STTS']['BUS_STN_STTS'] ?? '점검중';
 
           const cacheList = [
             this.saveAreaPopData(AREA_NM, areaPopData),
             this.saveAvgRoadData(AREA_NM, avgRoadData),
             this.saveAreaWeatherData(AREA_NM, areaWeatherData),
             this.saveAreaAirData(AREA_NM, areaAirData),
-            // 상세 정보 현재 미사용으로 주석 처리
-            // this.saveRoadTrafficStts(AREA_NM, roadTrafficStts),
-            this.saveBusData(AREA_NM, busData),
           ];
           Promise.all(cacheList);
         }
@@ -301,6 +279,7 @@ export class SeoulService {
       await this.dataCache(rawDatas);
     }
   }
+
   async saveSeoulAirData() {
     const url = `http://openapi.seoul.go.kr:8088/${process.env.AIR_KEY}/xml/ListAirQualityByDistrictService/1/25/`;
     const stream = this.httpService.get(encodeURI(url));
@@ -315,105 +294,29 @@ export class SeoulService {
     )['ListAirQualityByDistrictService']['row'];
 
     for (const data of datas) {
-      const GU_CODE = data['MSRSTENAME'];
-      const airData = {
-        이산화질소: data['NITROGEN'],
-        오존농도: data['OZONE'],
-        일산화탄소: data['CARBON'],
-        아황산가스: data['SULFUROUS'],
-      };
-      await this.cacheManager.set(
-        `AIR_ADDITION_${GU_CODE}`,
-        JSON.stringify(airData),
-      );
+      const guName = data['MSRSTENAME'];
+      // API 응답 데이터가 점검중이 아닐 경우에만 데이터 저장
+      if (data['NITROGEN'] !== '점검중') {
+        const airData = {
+          NITROGEN: data['NITROGEN'],
+          OZONE: data['OZONE'],
+          CARBON: data['CARBON'],
+          SULFUROUS: data['SULFUROUS'],
+        };
+        // Redis에 저장
+        await this.cacheManager.set(
+          `AIR_ADDITION_${guName}`,
+          JSON.stringify(airData),
+        );
+        // MySQL에 저장
+        await this.seoulAirRepository.save({
+          guName: guName,
+          NITROGEN: data['NITROGEN'],
+          OZONE: data['OZONE'],
+          CARBON: data['CARBON'],
+          SULFUROUS: data['SULFUROUS'],
+        });
+      }
     }
-  }
-
-  async findAllPop() {
-    const result: object[] = [];
-    for (const area of areaList) {
-      const data = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${area['AREA_NM']}`),
-      );
-      result.push(data);
-    }
-    return result;
-  }
-
-  async findAllWeather() {
-    const result: object[] = [];
-    for (const area of areaList) {
-      const data = JSON.parse(
-        await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
-      );
-      result.push(data);
-    }
-    return { result };
-  }
-
-  async findAllAir() {
-    const result: object[] = [];
-    for (const area of areaList) {
-      const data = JSON.parse(
-        await this.cacheManager.get(`AIR_${area['AREA_NM']}`),
-      );
-      result.push(data);
-    }
-    return { result };
-  }
-
-  async findOneWeather(placeId: string) {
-    const result = JSON.parse(
-      await this.cacheManager.get(`WEATHER_${placeId}`),
-    );
-    if (!result) throw new HttpException('wrong place name', 404);
-    else return { result };
-  }
-
-  async findAllRoads() {
-    const result: object[] = [];
-    for (const area of areaList) {
-      const data = JSON.parse(
-        await this.cacheManager.get(`ROAD_AVG_${area['AREA_NM']}`),
-      );
-      result.push(data);
-    }
-    return { result };
-  }
-
-  async findRoads(placeId: string) {
-    const result = JSON.parse(
-      await this.cacheManager.get(`ROAD_TRAFFIC_${placeId}`),
-    );
-    if (!result) throw new HttpException('wrong place name', 404);
-    else return { result };
-  }
-
-  async findAllBuses(placeId: string) {
-    const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
-
-    if (!data) {
-      throw new HttpException('null busData', 404);
-    }
-
-    for (const busData of data) {
-      delete busData.BUS_DETAIL;
-    }
-
-    return data;
-  }
-
-  async findBus(placeId: string, busId: number) {
-    const data = JSON.parse(await this.cacheManager.get(`BUS_${placeId}`));
-
-    if (!data) {
-      throw new HttpException('null busData', 404);
-    }
-
-    const resultData = data.find((obj: any) => obj.BUS_STN_ID === busId);
-
-    if (!resultData) throw new HttpException('wrong busId', 404);
-
-    return resultData;
   }
 }

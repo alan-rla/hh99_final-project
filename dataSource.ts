@@ -12,6 +12,7 @@ import { CarRoute } from 'src/entities/car_route';
 import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
 import { PopPredict } from 'src/entities/PopPredict';
+import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ const dataSource = new DataSource({
     Logo,
     Logo,
     PopPredict,
+    SeoulAirInfo,
   ],
 });
 

@@ -12,6 +12,7 @@ import { BusRoute } from 'src/entities/bus_route';
 import { SubwayRoute } from 'src/entities/subway_route';
 import { Logo } from 'src/entities/Logo';
 import { PopPredict } from 'src/entities/PopPredict';
+import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
 
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
@@ -40,6 +41,7 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
         SubwayRoute,
         Logo,
         PopPredict,
+        SeoulAirInfo,
       ],
       // migrations: ['dist/migrations/*{.ts,.js}'],
     };

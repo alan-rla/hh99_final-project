@@ -13,6 +13,7 @@ import { User_Like } from 'src/entities/User_Like';
 import { Cache } from 'cache-manager';
 import { PopPredict } from 'src/entities/PopPredict';
 import dayjs from 'dayjs';
+import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
 
 @Injectable()
 export class AreaService {
@@ -24,6 +25,8 @@ export class AreaService {
     private userLikeRepository: Repository<User_Like>,
     @InjectRepository(PopPredict)
     private popPredictRepository: Repository<PopPredict>,
+    @InjectRepository(SeoulAirInfo)
+    private seoulAirRepository: Repository<SeoulAirInfo>,
     private dataSource: DataSource,
   ) {}
 
@@ -170,11 +173,30 @@ export class AreaService {
         where: { AREA_NM: areaName },
         select: ['GU_CODE'],
       });
+
       if (!gu_code) throw new HttpException('wrong place name', 404);
+
       const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      const data2 = JSON.parse(
+
+      let data2 = JSON.parse(
         await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
       );
+
+      // data2가 없는 경우 = 대기환경 API에서 '점검중' 값을 반환해 저장 안한 경우
+      if (!data2) {
+        // 캐싱된 데이터가 없으므로 DB에서 조회
+        data2 = await this.seoulAirRepository.findOne({
+          where: { guName: gu_code['GU_CODE'] },
+          select: ['CARBON', 'NITROGEN', 'OZONE', 'SULFUROUS'],
+        });
+
+        // 다음번 조회를 위해 Redis 캐싱
+        await this.cacheManager.set(
+          `AIR_ADDITION_${gu_code['GU_CODE']}`,
+          JSON.stringify(data2),
+        );
+        console.log('DB 조회 및  캐싱 완료');
+      }
 
       const airLvl = data1['대기환경등급'];
       let img = '';
@@ -186,8 +208,6 @@ export class AreaService {
         img = process.env.AIR_LVL3;
       } else if (airLvl === '매우 나쁨') {
         img = process.env.AIR_LVL4;
-      } else {
-        img = process.env.AIR_MAINTENANCE;
       }
 
       const result = {
