@@ -85,17 +85,17 @@ export class AreaService {
   // 지역 인구 데이터 조회
   async findAreaPop(areaName: string) {
     try {
-      const data = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${areaName}`),
-      );
-
-      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
-
       const dong_code = await this.areaLikeRepository.findOne({
         where: { AREA_NM: areaName },
         select: ['DONG_CODE'],
       });
+      if (!dong_code) throw new HttpException('wrong place name', 404);
       const dong = JSON.parse(dong_code['DONG_CODE']);
+
+      const data = JSON.parse(
+        await this.cacheManager.get(`POPULATION_${areaName}`),
+      );
+      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
 
       for (let i = 1; i <= 12; i++) {
         const futureTime = currentTime
@@ -142,6 +142,7 @@ export class AreaService {
       const data = JSON.parse(
         await this.cacheManager.get(`WEATHER_${areaName}`),
       );
+      if (!data) throw new HttpException('wrong place name', 404);
       const weather = data['PRECPT_TYPE'];
       let img = '';
       if (weather === '없음') {
@@ -165,12 +166,12 @@ export class AreaService {
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
     try {
-      const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
       const gu_code = await this.areaLikeRepository.findOne({
         where: { AREA_NM: areaName },
         select: ['GU_CODE'],
       });
-
+      if (!gu_code) throw new HttpException('wrong place name', 404);
+      const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
       const data2 = JSON.parse(
         await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
       );
