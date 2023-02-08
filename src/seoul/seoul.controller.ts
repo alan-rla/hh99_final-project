@@ -37,7 +37,7 @@ export class SeoulController {
     await this.seoulService.saveSeoulAirData();
 
     // 이후 5분마다 한번씩 도로데이터 저장
-    const saveAirData = new CronJob('0 * */1 * * *', () => {
+    const saveAirData = new CronJob('0 0 */1 * * *', () => {
       this.seoulService.saveSeoulAirData();
     });
     this.schedulerRegistry.addCronJob('save air data', saveAirData);

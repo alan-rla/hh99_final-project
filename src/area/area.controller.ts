@@ -1,3 +1,4 @@
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
 import { LocalAuthGuard } from 'src/auth/local-auth.guard';
 import { Users } from 'src/entities/Users';
 import { User } from 'src/common/decorators/user.decorator';
@@ -21,7 +22,6 @@ import { LikeAreaDto } from './dto/like-area.dto';
 import { FindAreaPopDto } from './dto/population.dto';
 import { FindAreaWeatherDto } from './dto/weather.dto';
 import { FindAreaAirDto } from './dto/air.dto';
-import { LoggedInGuard } from 'src/auth/logged-in.guard';
 
 @ApiTags('AREA')
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -90,7 +90,6 @@ export class AreaController {
     status: 200,
     description: '지역 좋아요',
   })
-  @ApiCookieAuth('connect.sid')
   @UseGuards(LoggedInGuard)
   @Get('like/:areaName')
   likeArea(@User() user: Users, @Param('areaName') areaName: string) {

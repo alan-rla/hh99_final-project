@@ -66,6 +66,8 @@ export class AreaService {
           'ROAD_TRAFFIC_IDX'
         ] ?? '점검중';
 
+      const areaVid = process.env.AREA_VID;
+
       const result = {
         ...isArea,
         likeCnt: findOneAreaLikeCount,
@@ -73,6 +75,7 @@ export class AreaService {
         weather: weather,
         air: air,
         road: road,
+        areaVid: areaVid,
       };
       return result;
     } catch (err) {
@@ -150,7 +153,7 @@ export class AreaService {
       }
 
       const result = {
-        WEATHER_IMG: img,
+        날씨이미지: img,
         ...data,
       };
 
@@ -162,8 +165,17 @@ export class AreaService {
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
     try {
-      const data = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      const airLvl = data['AIR_IDX'];
+      const data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
+      const gu_code = await this.areaLikeRepository.findOne({
+        where: { AREA_NM: areaName },
+        select: ['GU_CODE'],
+      });
+
+      const data2 = JSON.parse(
+        await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
+      );
+
+      const airLvl = data1['대기환경등급'];
       let img = '';
       if (airLvl === '좋음') {
         img = process.env.AIR_LVL1;
@@ -178,8 +190,9 @@ export class AreaService {
       }
 
       const result = {
-        AIR_IMG: img,
-        ...data,
+        대기환경이미지: img,
+        ...data1,
+        ...data2,
       };
 
       return result;

@@ -22,6 +22,8 @@ export class AreaLike {
   LAT: number;
   @Column('varchar', { name: 'areaImg', length: 255 })
   areaImg: string;
+  @Column('varchar', { name: 'imgSource', length: 255 })
+  imgSource: string;
   @Column('varchar', { name: 'GU_CODE', length: 255 })
   GU_CODE: string;
   @Column('varchar', { name: 'DONG_CODE', length: 255 })
