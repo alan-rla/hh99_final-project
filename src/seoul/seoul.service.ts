@@ -188,8 +188,45 @@ export class SeoulService {
             ...weather
           } = output['WEATHER_STTS']['WEATHER_STTS'];
 
+          let forecast = [];
+          if (weather['FCST24HOURS']['FCST24HOURS']) {
+            for (const data of weather['FCST24HOURS']['FCST24HOURS']) {
+              const result = {
+                예보시간: data['FCST_DT'].toString().substring(8, 10) + '시',
+                기온: data['TEMP'].toString() + '℃',
+                강수량: data['PRECIPITATION'],
+                강수형태: data['PRECPT_TYPE'],
+                강수확률: data['RAIN_CHANCE'],
+                날씨: data['SKY_STTS'],
+              };
+
+              forecast.push(result);
+            }
+          } else {
+            forecast = ['점검중'];
+          }
+
+          const weatherData = {
+            날씨집계시간: weather['WEATHER_TIME'] ?? '점검중',
+            기온: weather['TEMP'] ?? '점검중',
+            체감기온: weather['SENSIBLE_TEMP'] ?? '점검중',
+            최고기온: weather['MAX_TEMP'] ?? '점검중',
+            최저기온: weather['MIN_TEMP'] ?? '점검중',
+            풍향: weather['WIND_DIRCT'] ?? '점검중',
+            풍속: weather['WIND_SPD'] ?? '점검중',
+            강수량: weather['PRECIPITATION'] ?? '점검중',
+            강수형태: weather['PRECPT_TYPE'] ?? '점검중',
+            강수메세지: weather['PCP_MSG'] ?? '점검중',
+            일출: weather['SUNRISE'] ?? '점검중',
+            일몰: weather['SUNSET'] ?? '점검중',
+            자외선단계: weather['UV_INDEX_LVL'] ?? '점검중',
+            자외선지수: weather['UV_INDEX'] ?? '점검중',
+            자외선메세지: weather['UV_MSG'] ?? '점검중',
+            일기예보: forecast,
+          };
+
           // 날씨 정보
-          const areaWeatherData = weather ?? '점검중';
+          const areaWeatherData = weatherData;
 
           // 미세먼지 정보
           const areaAirData = {

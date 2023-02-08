@@ -67,6 +67,8 @@ export class AreaService {
           'ROAD_TRAFFIC_IDX'
         ] ?? '점검중';
 
+      const areaVid = process.env.AREA_VID;
+
       const result = {
         ...isArea,
         likeCnt: findOneAreaLikeCount,
@@ -74,6 +76,7 @@ export class AreaService {
         weather: weather,
         air: air,
         road: road,
+        areaVid: areaVid,
       };
       return result;
     } catch (err) {
@@ -151,7 +154,7 @@ export class AreaService {
       }
 
       const result = {
-        WEATHER_IMG: img,
+        날씨이미지: img,
         ...data,
       };
 
