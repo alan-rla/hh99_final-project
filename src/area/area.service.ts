@@ -32,7 +32,6 @@ export class AreaService {
     const result = await this.areaLikeRepository.find();
     return result;
   }
-
   //지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
   async findOneAreas(areaName: string) {
     try {
@@ -163,7 +162,6 @@ export class AreaService {
       console.log(err);
     }
   }
-
   // 지역 대기환경 조회
   async findAreaAir(areaName: string) {
     try {
@@ -202,7 +200,6 @@ export class AreaService {
       console.log(err);
     }
   }
-
   // 지역 좋아요 기능
   async likeArea(user: Users, areaName: string) {
     const isArea = await this.areaLikeRepository.findOne({

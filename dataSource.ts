@@ -1,11 +1,16 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { Logo } from './src/entities/Logo';
 import { DataSource } from 'typeorm';
-import dotenv from 'dotenv';
 import { Users } from './src/entities/Users';
 import { Friends } from 'src/entities/Friends';
 import { AreaLike } from 'src/entities/AreaLike';
 import { Tourist_Spot } from 'src/entities/Tourist_spot';
 import { User_Like } from 'src/entities/User_Like';
+import { RoutesInfo } from 'src/entities/routesinfo';
+import { CarRoute } from 'src/entities/car_route';
+import { BusRoute } from 'src/entities/bus_route';
+import { SubwayRoute } from 'src/entities/subway_route';
 import { PopPredict } from 'src/entities/PopPredict';
 
 dotenv.config();
@@ -27,6 +32,11 @@ const dataSource = new DataSource({
     AreaLike,
     Tourist_Spot,
     User_Like,
+    RoutesInfo,
+    CarRoute,
+    BusRoute,
+    SubwayRoute,
+    Logo,
     Logo,
     PopPredict,
   ],

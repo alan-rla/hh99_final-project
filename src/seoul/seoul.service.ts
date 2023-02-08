@@ -302,7 +302,6 @@ export class SeoulService {
       await this.dataCache(rawDatas);
     }
   }
-
   async saveSeoulAirData() {
     const url = `http://openapi.seoul.go.kr:8088/${process.env.AIR_KEY}/xml/ListAirQualityByDistrictService/1/25/`;
     const stream = this.httpService.get(encodeURI(url));

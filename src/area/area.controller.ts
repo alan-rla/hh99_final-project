@@ -9,7 +9,12 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiResponse,
+  ApiTags,
+  ApiOperation,
+  ApiCookieAuth,
+} from '@nestjs/swagger';
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
 import { AreaService } from './area.service';
 import { FindAllAreaDto, FindOneAreaDto } from './dto/findall-area.dto';

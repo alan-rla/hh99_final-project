@@ -1,27 +1,60 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { BusRoute } from './bus_route';
+import { CarRoute } from './car_route';
+import { SubwayRoute } from './subway_route';
+import { Users } from './Users';
 
+@Entity({ schema: 'hh99_final-project', name: 'routesinfo' })
 export class RoutesInfo {
   @PrimaryGeneratedColumn({ type: 'int' })
   id: number;
+  @Column('int', { name: 'origin' })
+  origin: number;
+  @Column('int', { name: 'destination' })
+  destination: number;
 
-  @Column('enum', { name: 'transportation' })
-  transportation: string;
+  @OneToOne(type => CarRoute, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn({ name: 'car_id', referencedColumnName: 'car_id' })
+  carRoute: CarRoute;
 
-  @Column('int', { name: 'duration' })
-  duration: number;
+  @OneToOne(type => BusRoute, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn({ name: 'bus_id', referencedColumnName: 'bus_id' })
+  busRoute: BusRoute;
 
-  @Column('int', { name: 'distance' })
-  distance: number;
+  @OneToOne(type => SubwayRoute, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinColumn({ name: 'subway_id', referencedColumnName: 'subway_id' })
+  subwayRoute: SubwayRoute;
 
-  @Column('varchar', { name: 'origin' })
-  origin: string;
+  @ManyToOne(() => Users, users => users.routesinfo, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({
+    name: 'user_id',
+    referencedColumnName: 'id',
+  })
+  User: Users;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column('varchar', { name: 'routeNames' })
-  routeNames: string;
-
-  @Column('double', { name: 'originCoordiante ' })
-  originCoordinate: number;
-
-  @Column('double', { name: 'destinationCoordiante ' })
-  destinationCoordinate: number;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
