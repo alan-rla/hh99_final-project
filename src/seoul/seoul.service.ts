@@ -226,7 +226,6 @@ export class SeoulService {
               JSON.stringify(avgRoadData),
             );
           }
-          console.log(`${AREA_NM} 저장 완료`);
         }
       } catch (err) {
         console.log(err);
