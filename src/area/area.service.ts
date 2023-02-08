@@ -169,11 +169,13 @@ export class AreaService {
         where: { AREA_NM: areaName },
         select: ['GU_CODE'],
       });
+      console.log(gu_code);
+
       const data2 = JSON.parse(
         await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
       );
 
-      const airLvl = data1['AIR_IDX'];
+      const airLvl = data1['대기환경등급'];
       let img = '';
       if (airLvl === '좋음') {
         img = process.env.AIR_LVL1;
@@ -188,7 +190,7 @@ export class AreaService {
       }
 
       const result = {
-        AIR_IMG: img,
+        대기환경이미지: img,
         ...data1,
         ...data2,
       };
