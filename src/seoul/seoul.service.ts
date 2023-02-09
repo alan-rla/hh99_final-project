@@ -309,35 +309,41 @@ export class SeoulService {
       const weatherCache = JSON.parse(
         await this.cacheManager.get(`WEATHER_${area['AREA_NM']}`),
       );
+      if (weatherCache) {
+        await this.seoulWeatherRepository.save({
+          AREA_NM: area['AREA_NM'],
+          cache: JSON.stringify(weatherCache),
+        });
+      }
+
       const roadCache = JSON.parse(
         await this.cacheManager.get(`ROAD_AVG_${area['AREA_NM']}`),
       );
+      if (roadCache) {
+        await this.seoulRoadRepository.save({
+          AREA_NM: area['AREA_NM'],
+          cache: JSON.stringify(roadCache),
+        });
+      }
+
       const popCache = JSON.parse(
         await this.cacheManager.get(`POPULATION_${area['AREA_NM']}`),
       );
+      if (popCache) {
+        await this.seoulPopRepository.save({
+          AREA_NM: area['AREA_NM'],
+          cache: JSON.stringify(popCache),
+        });
+      }
+
       const pmCache = JSON.parse(
         await this.cacheManager.get(`AIR_${area['AREA_NM']}`),
       );
-
-      const weatherDbSave = await this.seoulWeatherRepository.save({
-        AREA_NM: area['AREA_NM'],
-        cache: JSON.stringify(weatherCache),
-      });
-      const roadDbSave = await this.seoulRoadRepository.save({
-        AREA_NM: area['AREA_NM'],
-        cache: JSON.stringify(roadCache),
-      });
-      const popDbSave = await this.seoulPopRepository.save({
-        AREA_NM: area['AREA_NM'],
-        cache: JSON.stringify(popCache),
-      });
-      const pmDbSave = await this.seoulPMRepository.save({
-        AREA_NM: area['AREA_NM'],
-        cache: JSON.stringify(pmCache),
-      });
-
-      if (weatherCache && roadCache && popCache && pmCache) {
-        await Promise.all([weatherDbSave, roadDbSave, popDbSave, pmDbSave]);
+      if (pmCache) {
+        await this.seoulPMRepository.save({
+          AREA_NM: area['AREA_NM'],
+          cache: JSON.stringify(pmCache),
+        });
       }
     }
   }
