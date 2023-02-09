@@ -169,9 +169,13 @@ export class AreaService {
         // 다음번 조회를 위해 Redis 캐싱
         await this.cacheManager.set(`POPULATION_${areaName}`, dbCache.cache);
       }
-
+      // 민수님 요청으로 과거 인구 이력 없이 현재시간 기준 다음 12시간 예상인구 출력
+      data.POP_RECORD = [];
       // 다음 12시간 예상 인구를 찾기위해 현재 시간 호출
-      const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
+      // const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
+      const currentTime = dayjs(
+        dayjs(new Date()).format('YYYY-MM-DD HH') + ':00:00',
+      );
 
       for (let i = 1; i <= 12; i++) {
         // dayjs 메소드 + 반복문으로 다음 12시간 차례로 생성
