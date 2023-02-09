@@ -66,14 +66,14 @@ export class AreaService {
       // 인구 데이터 요약 호출
       let popData = JSON.parse(
         await this.cacheManager.get(`POPULATION_${areaName}`),
-      )['AREA_CONGEST_LVL'];
+      );
       if (!popData) {
         // 캐싱된 데이터가 없으므로 DB에서 조회
         const dbCache = await this.seoulPopRepository.findOne({
           where: { AREA_NM: areaName },
           select: ['cache'],
         });
-        popData = JSON.parse(dbCache.cache)['AREA_CONGEST_LVL'];
+        popData = JSON.parse(dbCache.cache);
 
         // 다음번 조회를 위해 Redis 캐싱
         await this.cacheManager.set(`POPULATION_${areaName}`, dbCache.cache);
@@ -82,30 +82,28 @@ export class AreaService {
       // 날씨 데이터 요약 호출
       let weather = JSON.parse(
         await this.cacheManager.get(`WEATHER_${areaName}`),
-      )['강수메세지'];
+      );
       if (!weather) {
         // 캐싱된 데이터가 없으므로 DB에서 조회
         const dbCache = await this.seoulWeatherRepository.findOne({
           where: { AREA_NM: areaName },
           select: ['cache'],
         });
-        weather = JSON.parse(dbCache.cache)['강수메세지'];
+        weather = JSON.parse(dbCache.cache);
 
         // 다음번 조회를 위해 Redis 캐싱
         await this.cacheManager.set(`WEATHER_${areaName}`, dbCache.cache);
       }
 
       // 대기환경 데이터 요약 호출
-      let air = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`))[
-        '대기환경등급'
-      ];
+      let air = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
       if (!air) {
         // 캐싱된 데이터가 없으므로 DB에서 조회
         const dbCache = await this.seoulPMRepository.findOne({
           where: { AREA_NM: areaName },
           select: ['cache'],
         });
-        air = JSON.parse(dbCache.cache)['대기환경등급'];
+        air = JSON.parse(dbCache.cache);
 
         // 다음번 조회를 위해 Redis 캐싱
         await this.cacheManager.set(`AIR_${areaName}`, dbCache.cache);
@@ -114,14 +112,14 @@ export class AreaService {
       // 도로 데이터 요약 호출
       let road = JSON.parse(
         await this.cacheManager.get(`ROAD_AVG_${areaName}`),
-      )['ROAD_TRAFFIC_IDX'];
+      );
       if (!road) {
         // 캐싱된 데이터가 없으므로 DB에서 조회
         const dbCache = await this.seoulRoadRepository.findOne({
           where: { AREA_NM: areaName },
           select: ['cache'],
         });
-        road = JSON.parse(dbCache.cache)['대기환경등급'];
+        road = JSON.parse(dbCache.cache);
 
         // 다음번 조회를 위해 Redis 캐싱
         await this.cacheManager.set(`AIR_${areaName}`, dbCache.cache);
@@ -132,10 +130,10 @@ export class AreaService {
       const result = {
         ...isArea,
         likeCnt: findOneAreaLikeCount,
-        congestLvl: popData,
-        weather: weather,
-        air: air,
-        road: road,
+        congestLvl: popData['AREA_CONGEST_LVL'],
+        weather: weather['강수메세지'],
+        air: air['대기환경등급'],
+        road: road['ROAD_TRAFFIC_IDX'],
         areaVid: areaVid,
       };
       return result;
