@@ -1,7 +1,6 @@
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -13,6 +12,9 @@ import { Users } from './Users';
 export class User_Like {
   @PrimaryGeneratedColumn({ type: 'int' })
   user_like_id: number;
+
+  @Column({ type: 'int' })
+  public areaLike_id: number;
 
   @ManyToOne(() => AreaLike, arealike => arealike.UserLike, {
     onDelete: 'CASCADE',

@@ -36,8 +36,8 @@ export class AreaController {
     description: '도시 50개 지역 이름, 좌표 조회',
   })
   @Get()
-  findAllAreas() {
-    return this.areaService.findAllAreas();
+  getAllAreas() {
+    return this.areaService.getAllAreas();
   }
 
   @ApiOperation({ summary: '지역 정보 단건 조회' })
@@ -47,8 +47,8 @@ export class AreaController {
     description: '지역 정보 단건 조회',
   })
   @Get('/:areaName')
-  findOneAreas(@Param('areaName') areaName: string) {
-    return this.areaService.findOneAreas(areaName);
+  getArea(@Param('areaName') areaName: string) {
+    return this.areaService.getArea(areaName);
   }
 
   @ApiOperation({ summary: '지역 인구 정보 단건 조회' })
@@ -58,8 +58,8 @@ export class AreaController {
     description: '지역 인구 정보 단건 조회',
   })
   @Get('/:areaName/population')
-  findAreaPop(@Param('areaName') areaName: string) {
-    return this.areaService.findAreaPop(areaName);
+  getAreaPopulation(@Param('areaName') areaName: string) {
+    return this.areaService.getAreaPopulation(areaName);
   }
 
   @ApiOperation({ summary: '지역 날씨 정보 단건 조회' })
@@ -69,8 +69,8 @@ export class AreaController {
     description: '지역 날씨 정보 단건 조회',
   })
   @Get('/:areaName/weather')
-  findAreaWeather(@Param('areaName') areaName: string) {
-    return this.areaService.findAreaWeather(areaName);
+  getAreaWeather(@Param('areaName') areaName: string) {
+    return this.areaService.getAreaWeather(areaName);
   }
 
   @ApiOperation({ summary: '지역 대기환경 정보 단건 조회' })
@@ -80,8 +80,8 @@ export class AreaController {
     description: '지역 대기환경 정보 단건 조회',
   })
   @Get('/:areaName/air')
-  findAreaAir(@Param('areaName') areaName: string) {
-    return this.areaService.findAreaAir(areaName);
+  getAreaAirQuality(@Param('areaName') areaName: string) {
+    return this.areaService.getAreaAirQuality(areaName);
   }
 
   @ApiOperation({ summary: '지역 좋아요' })
