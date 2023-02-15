@@ -1,8 +1,7 @@
-import { Users } from 'src/entities/Users';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Module } from '@nestjs/common';
-import { AreaService } from './area.service';
-import { AreaController } from './area.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Users } from 'src/entities/Users';
 import { AreaLike } from 'src/entities/AreaLike';
 import { User_Like } from 'src/entities/User_Like';
 import { PopPredict } from 'src/entities/PopPredict';
@@ -11,6 +10,15 @@ import { SeoulWeatherInfo } from 'src/entities/seoulWeatherInfo';
 import { SeoulRoadInfo } from 'src/entities/seoulRoadInfo';
 import { SeoulPopInfo } from 'src/entities/seoulPopInfo';
 import { SeoulPMInfo } from 'src/entities/seoulPMInfo';
+
+import { AreaController } from './area.controller';
+import { AreaService } from './area.service';
+import {
+  PopulationService,
+  WeatherService,
+  AirQualityService,
+  RoadConditionService,
+} from './services';
 
 @Module({
   imports: [
@@ -27,6 +35,12 @@ import { SeoulPMInfo } from 'src/entities/seoulPMInfo';
     ]),
   ],
   controllers: [AreaController],
-  providers: [AreaService],
+  providers: [
+    AreaService,
+    PopulationService,
+    WeatherService,
+    AirQualityService,
+    RoadConditionService,
+  ],
 })
 export class AreaModule {}

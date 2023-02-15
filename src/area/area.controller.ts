@@ -1,7 +1,3 @@
-import { LoggedInGuard } from 'src/auth/logged-in.guard';
-import { LocalAuthGuard } from 'src/auth/local-auth.guard';
-import { Users } from 'src/entities/Users';
-import { User } from 'src/common/decorators/user.decorator';
 import {
   Controller,
   Get,
@@ -9,19 +5,21 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiResponse,
-  ApiTags,
-  ApiOperation,
-  ApiCookieAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
+
+import { LoggedInGuard } from 'src/auth/logged-in.guard';
+import { Users } from 'src/entities/Users';
+import { User } from 'src/common/decorators/user.decorator';
+
 import { UndefinedToNullInterceptor } from '../common/interceptors/undefinedToNull.interceptor';
-import { AreaService } from './area.service';
+
 import { FindAllAreaDto, FindOneAreaDto } from './dto/findall-area.dto';
 import { LikeAreaDto } from './dto/like-area.dto';
 import { FindAreaPopDto } from './dto/population.dto';
 import { FindAreaWeatherDto } from './dto/weather.dto';
 import { FindAreaAirDto } from './dto/air.dto';
+
+import { AreaService } from './area.service';
 
 @ApiTags('AREA')
 @UseInterceptors(UndefinedToNullInterceptor)
@@ -30,9 +28,8 @@ export class AreaController {
   constructor(private readonly areaService: AreaService) {}
 
   @ApiOperation({ summary: '도시 50개 지역 이름, 좌표 조회' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: FindAllAreaDto,
-    status: 200,
     description: '도시 50개 지역 이름, 좌표 조회',
   })
   @Get()
@@ -41,9 +38,8 @@ export class AreaController {
   }
 
   @ApiOperation({ summary: '지역 정보 단건 조회' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: FindOneAreaDto,
-    status: 200,
     description: '지역 정보 단건 조회',
   })
   @Get('/:areaName')
@@ -52,9 +48,8 @@ export class AreaController {
   }
 
   @ApiOperation({ summary: '지역 인구 정보 단건 조회' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: FindAreaPopDto,
-    status: 200,
     description: '지역 인구 정보 단건 조회',
   })
   @Get('/:areaName/population')
@@ -63,9 +58,8 @@ export class AreaController {
   }
 
   @ApiOperation({ summary: '지역 날씨 정보 단건 조회' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: FindAreaWeatherDto,
-    status: 200,
     description: '지역 날씨 정보 단건 조회',
   })
   @Get('/:areaName/weather')
@@ -74,9 +68,8 @@ export class AreaController {
   }
 
   @ApiOperation({ summary: '지역 대기환경 정보 단건 조회' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: FindAreaAirDto,
-    status: 200,
     description: '지역 대기환경 정보 단건 조회',
   })
   @Get('/:areaName/air')
@@ -85,9 +78,8 @@ export class AreaController {
   }
 
   @ApiOperation({ summary: '지역 좋아요' })
-  @ApiResponse({
+  @ApiOkResponse({
     type: LikeAreaDto,
-    status: 200,
     description: '지역 좋아요',
   })
   @UseGuards(LoggedInGuard)

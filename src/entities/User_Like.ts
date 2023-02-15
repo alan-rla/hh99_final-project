@@ -28,6 +28,9 @@ export class User_Like {
   ])
   Area: AreaLike;
 
+  @Column({ type: 'int' })
+  public user_id: number;
+
   @ManyToOne(() => Users, users => users.UserLike, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',

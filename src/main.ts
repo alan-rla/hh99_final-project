@@ -10,8 +10,10 @@ import { HttpExceptionFilter } from './httpException.filter';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 declare const module: any;
 async function bootstrap() {
+  initializeTransactionalContext();
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const port = configService.get('PORT');
