@@ -1,372 +1,178 @@
-import { Users } from 'src/entities/Users';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  BadRequestException,
-  CACHE_MANAGER,
-  HttpException,
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Repository } from 'typeorm';
+import { Transactional } from 'typeorm-transactional';
+
+import { Users } from 'src/entities/Users';
 import { AreaLike } from 'src/entities/AreaLike';
-import { Repository, DataSource } from 'typeorm';
 import { User_Like } from 'src/entities/User_Like';
-import { Cache } from 'cache-manager';
-import { PopPredict } from 'src/entities/PopPredict';
-import dayjs from 'dayjs';
-import { SeoulAirInfo } from 'src/entities/seoulAirInfo';
-import { SeoulWeatherInfo } from 'src/entities/seoulWeatherInfo';
-import { SeoulRoadInfo } from 'src/entities/seoulRoadInfo';
-import { SeoulPopInfo } from 'src/entities/seoulPopInfo';
-import { SeoulPMInfo } from 'src/entities/seoulPMInfo';
+
+import {
+  PopulationService,
+  WeatherService,
+  AirQualityService,
+  RoadConditionService,
+} from './services';
 
 @Injectable()
 export class AreaService {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
     @InjectRepository(AreaLike)
-    private areaLikeRepository: Repository<AreaLike>,
+    private readonly areaLikeRepository: Repository<AreaLike>,
     @InjectRepository(User_Like)
-    private userLikeRepository: Repository<User_Like>,
-    @InjectRepository(PopPredict)
-    private popPredictRepository: Repository<PopPredict>,
-    @InjectRepository(SeoulAirInfo)
-    private seoulAirRepository: Repository<SeoulAirInfo>,
-    @InjectRepository(SeoulWeatherInfo)
-    private seoulWeatherRepository: Repository<SeoulWeatherInfo>,
-    @InjectRepository(SeoulRoadInfo)
-    private seoulRoadRepository: Repository<SeoulRoadInfo>,
-    @InjectRepository(SeoulPopInfo)
-    private seoulPopRepository: Repository<SeoulPopInfo>,
-    @InjectRepository(SeoulPMInfo)
-    private seoulPMRepository: Repository<SeoulPMInfo>,
-    private dataSource: DataSource,
+    private readonly userLikeRepository: Repository<User_Like>,
+    private readonly populationService: PopulationService,
+    private readonly weatherService: WeatherService,
+    private readonly airQualityService: AirQualityService,
+    private readonly roadConditionService: RoadConditionService,
   ) {}
 
-  //지역 전체 조회
-  async findAllAreas() {
+  /**
+   * 지역 전체 조회
+   */
+  public async getAllAreas(): Promise<AreaLike[]> {
     const result = await this.areaLikeRepository.find();
+
     return result;
   }
-  //지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
-  async findOneAreas(areaName: string) {
-    try {
-      const isArea = await this.areaLikeRepository.findOne({
-        where: { AREA_NM: areaName },
-      });
-      if (!isArea) throw new HttpException('wrong place name', 404);
 
-      const findOneAreaLikeCount = await this.userLikeRepository
-        .createQueryBuilder('user_like')
-        .leftJoinAndSelect('user_like.Area', 'areaLike')
-        .where('user_like.Area = :areaLike_id', {
-          areaLike_id: isArea.areaLike_id,
-        })
-        .getCount();
+  /**
+   * 지역 단건 조회 (좋아요 합계, 인구, 날씨, 도로 실시간 데이터 취합)
+   */
+  public async getArea(areaName: string) {
+    const areaLike = await this.getAreaLike(areaName);
+    const areaLikeCount = await this.getAreaLikeCount(areaLike.areaLike_id);
 
-      // 인구 데이터 요약 호출
-      let popData = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${areaName}`),
-      );
-      if (!popData) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulPopRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        popData = JSON.parse(dbCache.cache);
+    const population = await this.populationService.get(areaName);
+    const weather = await this.weatherService.get(areaName);
+    const air = await this.airQualityService.get(areaName);
+    const road = await this.roadConditionService.get(areaName);
 
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`POPULATION_${areaName}`, dbCache.cache);
-      }
+    const result = {
+      ...areaLike,
+      likeCnt: areaLikeCount,
+      congestLvl: population['AREA_CONGEST_LVL'],
+      weather: weather['강수메세지'],
+      air: air['대기환경등급'],
+      road: road['ROAD_TRAFFIC_IDX'],
+      areaVid: process.env.AREA_VID,
+    };
 
-      // 날씨 데이터 요약 호출
-      let weather = JSON.parse(
-        await this.cacheManager.get(`WEATHER_${areaName}`),
-      );
-      if (!weather) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulWeatherRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        weather = JSON.parse(dbCache.cache);
-
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`WEATHER_${areaName}`, dbCache.cache);
-      }
-
-      // 대기환경 데이터 요약 호출
-      let air = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      if (!air) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulPMRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        air = JSON.parse(dbCache.cache);
-
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`AIR_${areaName}`, dbCache.cache);
-      }
-
-      // 도로 데이터 요약 호출
-      let road = JSON.parse(
-        await this.cacheManager.get(`ROAD_AVG_${areaName}`),
-      );
-      if (!road) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulRoadRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        road = JSON.parse(dbCache.cache);
-
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`AIR_${areaName}`, dbCache.cache);
-      }
-
-      const areaVid = process.env.AREA_VID;
-
-      const result = {
-        ...isArea,
-        likeCnt: findOneAreaLikeCount,
-        congestLvl: popData['AREA_CONGEST_LVL'],
-        weather: weather['강수메세지'],
-        air: air['대기환경등급'],
-        road: road['ROAD_TRAFFIC_IDX'],
-        areaVid: areaVid,
-      };
-      return result;
-    } catch (err) {
-      console.log(err);
-    }
-  }
-  // 지역 인구 데이터 조회
-  async findAreaPop(areaName: string) {
-    try {
-      // DB에 저장된 지역에 포함되는 동 이름 호출
-      const dong_code = await this.areaLikeRepository.findOne({
-        where: { AREA_NM: areaName },
-        select: ['DONG_CODE'],
-      });
-      if (!dong_code) throw new HttpException('wrong place name', 404);
-      const dong = JSON.parse(dong_code['DONG_CODE']);
-
-      let data = JSON.parse(
-        await this.cacheManager.get(`POPULATION_${areaName}`),
-      );
-
-      if (!data) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulPopRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        data = JSON.parse(dbCache.cache);
-
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`POPULATION_${areaName}`, dbCache.cache);
-      }
-      // 민수님 요청으로 과거 인구 이력 없이 현재시간 기준 다음 12시간 예상인구 출력
-      data.POP_RECORD = [];
-      // 다음 12시간 예상 인구를 찾기위해 현재 시간 호출
-      // const currentTime = dayjs(data['PPLTN_TIME'].substring(0, 14) + '00:00');
-      const currentTime = dayjs(
-        dayjs(new Date()).format('YYYY-MM-DD HH') + ':00:00',
-      );
-
-      for (let i = 1; i <= 12; i++) {
-        // dayjs 메소드 + 반복문으로 다음 12시간 차례로 생성
-        const futureTime = currentTime
-          .add(i, 'hour')
-          .format('YYYY-MM-DD HH:mm:ss');
-
-        const rawData = await this.popPredictRepository.findOne({
-          where: { 시간: futureTime },
-          select: dong,
-        });
-
-        const pop = Math.ceil(
-          Object.values(rawData).reduce((a, b) => a + b, 0),
-        );
-        data.POP_RECORD.push({ time: futureTime, population: pop });
-      }
-
-      const crowdLvl = data['AREA_CONGEST_LVL'];
-      let img = '';
-      if (crowdLvl === '여유') {
-        img = process.env.CROWD_LVL1;
-      } else if (crowdLvl === '보통') {
-        img = process.env.CROWD_LVL2;
-      } else if (crowdLvl === '약간 붐빔') {
-        img = process.env.CROWD_LVL3;
-      } else {
-        img = process.env.CROWD_LVL4;
-      }
-
-      const result = {
-        POP_IMG: img,
-        ...data,
-      };
-
-      return result;
-    } catch (err) {
-      console.log(err);
-    }
+    return result;
   }
 
-  //지역 날씨 조회
-  async findAreaWeather(areaName: string) {
-    try {
-      let data = JSON.parse(await this.cacheManager.get(`WEATHER_${areaName}`));
+  /**
+   * 지역 인구 데이터 조회
+   */
+  public async getAreaPopulation(areaName: string) {
+    const areaLike = await this.getAreaLike(areaName);
+    const population = await this.populationService.get(areaName);
 
-      if (!data) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulWeatherRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        data = JSON.parse(dbCache.cache);
+    // DB에 저장된 지역에 포함되는 동 이름 호출
+    const dong = JSON.parse(areaLike.DONG_CODE);
 
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`WEATHER_${areaName}`, dbCache.cache);
-      }
-      // 캐시에도, DB에도 없으면 장소명 틀린것
-      if (!data) throw new HttpException('wrong place name', 404);
+    // 민수님 요청으로 과거 인구 이력 없이 현재 시각 기준 다음 12시간 내 예상 인구 조회
+    population.POP_RECORD = await this.populationService.getPredicted(dong, 12);
 
-      const weather = data['강수형태'];
-      let img = '';
-      if (weather === '없음') {
-        img = process.env.WEATHER_NORMAL;
-      } else if (weather === '비') {
-        img = process.env.WEATHER_RANIY;
-      } else {
-        img = process.env.WEATHER_SNOWY;
-      }
+    const crowdLevel = population.AREA_CONGEST_LVL;
+    const crowdLevelImage =
+      this.populationService.getCrowdLevelImageUrl(crowdLevel);
 
-      const result = {
-        날씨이미지: img,
-        ...data,
-      };
+    const result = {
+      POP_IMG: crowdLevelImage,
+      ...population,
+    };
 
-      return result;
-    } catch (err) {
-      console.log(err);
-    }
+    return result;
   }
-  // 지역 대기환경 조회
-  async findAreaAir(areaName: string) {
-    try {
-      const gu_code = await this.areaLikeRepository.findOne({
-        where: { AREA_NM: areaName },
-        select: ['GU_CODE'],
-      });
 
-      if (!gu_code) throw new HttpException('wrong place name', 404);
+  /**
+   * 지역 날씨 정보 조회
+   */
+  public async getAreaWeather(areaName: string) {
+    const weather = await this.weatherService.get(areaName);
 
-      let data1 = JSON.parse(await this.cacheManager.get(`AIR_${areaName}`));
-      // data1이 없는 경우 = 도시데이터 API에서 '점검중' 반환 또는 응답값 자체가 없을 때
-      if (!data1) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulPMRepository.findOne({
-          where: { AREA_NM: areaName },
-          select: ['cache'],
-        });
-        data1 = JSON.parse(dbCache.cache);
+    const result = {
+      날씨이미지: this.weatherService.getWeatherImageUrl(weather['강수형태']),
+      ...weather,
+    };
 
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(`AIR_${areaName}`, dbCache.cache);
-      }
-
-      let data2 = JSON.parse(
-        await this.cacheManager.get(`AIR_ADDITION_${gu_code['GU_CODE']}`),
-      );
-      // data2가 없는 경우 = 대기환경 API에서 '점검중' 값을 반환해 저장 안한 경우
-      if (!data2) {
-        // 캐싱된 데이터가 없으므로 DB에서 조회
-        const dbCache = await this.seoulAirRepository.findOne({
-          where: { guName: gu_code['GU_CODE'] },
-          select: ['cache'],
-        });
-        data2 = JSON.parse(dbCache.cache);
-
-        // 다음번 조회를 위해 Redis 캐싱
-        await this.cacheManager.set(
-          `AIR_ADDITION_${gu_code['GU_CODE']}`,
-          dbCache.cache,
-        );
-      }
-
-      const airLvl = data1['대기환경등급'];
-      let img = '';
-      if (airLvl === '좋음') {
-        img = process.env.AIR_LVL1;
-      } else if (airLvl === '보통') {
-        img = process.env.AIR_LVL2;
-      } else if (airLvl === '나쁨') {
-        img = process.env.AIR_LVL3;
-      } else if (airLvl === '매우 나쁨') {
-        img = process.env.AIR_LVL4;
-      }
-
-      const result = {
-        대기환경이미지: img,
-        ...data1,
-        ...data2,
-      };
-
-      return result;
-    } catch (err) {
-      console.log(err);
-    }
+    return result;
   }
-  // 지역 좋아요 기능
-  async likeArea(user: Users, areaName: string) {
-    const isArea = await this.areaLikeRepository.findOne({
-      where: { AREA_NM: areaName },
+
+  /**
+   * 지역 대기환경 조회
+   */
+  public async getAreaAirQuality(areaName: string) {
+    const areaLike = await this.getAreaLike(areaName);
+    const airQuality = await this.airQualityService.get(areaName);
+    const detailAreaAirQuality = await this.airQualityService.getDetail(
+      areaLike.GU_CODE,
+    );
+
+    const result = {
+      대기환경이미지: this.airQualityService.getAirQualityLevelImageUrl(
+        airQuality['대기환경등급'],
+      ),
+      ...airQuality,
+      ...detailAreaAirQuality,
+    };
+
+    return result;
+  }
+
+  /**
+   * 지역 좋아요 기능
+   */
+  @Transactional()
+  public async likeArea(user: Users, areaName: string) {
+    const areaLike = await this.getAreaLike(areaName);
+    const userLike = await this.userLikeRepository.findOne({
+      where: {
+        areaLike_id: areaLike.areaLike_id,
+        user_id: user.id,
+      },
     });
 
-    const isAreaLikeUser = await this.userLikeRepository
-      .createQueryBuilder('user_like')
-      .leftJoinAndSelect('user_like.User', 'users')
-      .leftJoinAndSelect('user_like.Area', 'areaLike')
-      .where('user_like.User = :user_id', { user_id: user.id })
-      .andWhere('user_like.Area = :areaLike_id', {
-        areaLike_id: isArea.areaLike_id,
-      })
-      .getOne();
-
-    if (isAreaLikeUser) {
+    if (userLike) {
       throw new BadRequestException('이미 좋아요를 헀습니다.');
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const foundUser = await this.usersRepository.findOne({
+      where: { id: user.id },
+    });
 
-    try {
-      const findUser = await queryRunner.manager.getRepository(Users).findOne({
-        where: { id: user.id },
-      });
+    const data = await this.userLikeRepository.save({
+      Area: areaLike,
+      User: foundUser,
+    });
 
-      const findArea = await queryRunner.manager
-        .getRepository(AreaLike)
-        .findOne({
-          where: { AREA_NM: areaName },
-        });
+    return data;
+  }
 
-      const data = await queryRunner.manager.getRepository(User_Like).save({
-        Area: findArea,
-        User: findUser,
-      });
+  /**
+   * 특정 지역 이름으로 지역 정보 조회
+   */
+  private async getAreaLike(areaName: string): Promise<AreaLike> {
+    const areaLike = await this.areaLikeRepository.findOne({
+      where: { AREA_NM: areaName },
+    });
 
-      await queryRunner.commitTransaction();
-      return data;
-    } catch (err) {
-      console.error(err);
-      await queryRunner.rollbackTransaction();
-    } finally {
-      await queryRunner.release();
+    if (!areaLike) {
+      throw new HttpException('There is no place.', 404);
     }
+
+    return areaLike;
+  }
+
+  /**
+   * 특정 지역 좋아요 개수 조회
+   */
+  private async getAreaLikeCount(areaLikeId: number): Promise<number> {
+    return this.userLikeRepository.count({
+      where: { areaLike_id: areaLikeId },
+    });
   }
 }

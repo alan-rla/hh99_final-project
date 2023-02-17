@@ -1,6 +1,4 @@
 {
   "editor.formatOnSave": true,
-  "conventionalCommits.scopes": [
-    "routes"
-  ]
+  "conventionalCommits.scopes": ["routes", "area", "seoul"]
 }
