@@ -49,10 +49,14 @@
 2. Elasticache
 
 - 요구 사항 및 문제
+
   - EC2 서버 로컬 환경에서 Redis 설치 및 활용이 가능하나 서버의 리소스를 소모함
   - EC2 로컬 Redis 가동 중 외부 IP에서 flushall 공격이 주기적으로 들어와 Redis에 저장된 데이터가 사라짐을 확인
+
     ![중국IP 공격](https://user-images.githubusercontent.com/110752019/220836241-673b6cbc-3ba3-423e-aaf9-2a41ba831471.png)
+
   - Redis에 캐싱시켜둔 데이터의 손실 우려
+
 - 대안
   - Redis-server
 - 의사결정
