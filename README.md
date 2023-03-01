@@ -1,29 +1,36 @@
 # D'oh - 실시간 도시데이터 제공 서비스
 
-![IMG_0096](https://user-images.githubusercontent.com/110752019/220834388-55ecb40e-ca38-4173-afde-9c71670a16ae.jpg)
+## 목차
 
-![01](https://user-images.githubusercontent.com/110752019/220834585-e6b01172-aa21-47e9-ab0d-05464b2686d5.png)
+1. [프로젝트 소개](#프로젝트-소개)
+2. [기술 도입 배경과 의사결정](#기술-도입-배경과-의사결정)
+3. [아키텍쳐](#아키텍쳐)
+4. [기술스택](#기술스택)
+5. [기술적인 도전 및 트러블 슈팅](#기술적인-도전-및-트러블-슈팅)
+6. [팀원](#팀원)
+
+## 1. 프로젝트 소개
 
 서울시에서 제공하는 오픈 API와 머신러닝을 활용해 서울시 50개 주요 지역의 인구혼잡도 예측과 실시간 생활 정보를 제공하는 서비스입니다.
 
+![IMG_0096](https://user-images.githubusercontent.com/110752019/220834388-55ecb40e-ca38-4173-afde-9c71670a16ae.jpg)
+![01](https://user-images.githubusercontent.com/110752019/220834585-e6b01172-aa21-47e9-ab0d-05464b2686d5.png)
 ![02](https://user-images.githubusercontent.com/110752019/220834765-90b79d30-9a37-4344-99e4-8a9c0b33622d.png)
 ![03](https://user-images.githubusercontent.com/110752019/220834770-296c3bb2-9055-4c0e-851c-667a1fb9d380.png)
 ![04](https://user-images.githubusercontent.com/110752019/220834778-64698957-ff07-4a44-9228-a03fa3fa2c81.png)
 ![05](https://user-images.githubusercontent.com/110752019/220834783-c422a2e7-b44b-434f-bf0c-a9ce989a254b.png)
 
-# 프로젝트 소개
-
-## 팀 노션
+### 팀 노션
 
 [팀 워크스페이스 바로가기](https://itsjustpeterparker.notion.site/D-oh-by-Claudia-4afd4d4823df4319a2bae7e942a6dd7a)
 
-## 활용한 오픈 API
+### 활용한 오픈 API
 
 [서울시 실시간 도시데이터](https://data.seoul.go.kr/dataList/OA-21285/A/1/datasetView.do)
 
 [서울시 실시간 자치구별 대기환경 현황](http://data.seoul.go.kr/dataList/OA-1200/A/1/datasetView.do)
 
-## 기술 도입 배경과 의사결정
+## 2. 기술 도입 배경과 의사결정
 
 1. **Redis**
 
@@ -68,11 +75,11 @@
   - 개발자의 생산성 향상
   - 어플리케이션을 실행하는 AWS 리소스를 완벽하게 제어할 수 있다
 
-# 아키텍쳐
+## 3. 아키텍쳐
 
 ![06](https://user-images.githubusercontent.com/110752019/220838351-4b8465f7-62aa-4313-9e02-392f2eec9083.png)
 
-# 기술스택
+## 4. 기술스택
 
 | 분류      | 기술                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -81,7 +88,7 @@
 | DB        | <img src="https://img.shields.io/badge/MySQL-005C84?style=for-the-badge&logo=mysql&logoColor=white"/>&nbsp;<img src="https://img.shields.io/badge/redis-CC0000.svg?&style=for-the-badge&logo=redis&logoColor=white"/>&nbsp;<img src="https://github.com/typeorm/typeorm/raw/master/resources/logo_big.png" title="TypeORM" alt="TypeORM" width="80" height="37"/>&nbsp;                                                                                |
 | Server    | <img src="https://user-images.githubusercontent.com/110752019/220839528-0fbf359c-4544-4883-ab4f-8ec5676bbc93.svg"/>&nbsp;![Amazon S3](https://img.shields.io/static/v1?style=for-the-badge&message=Amazon+S3&color=569A31&logo=Amazon+S3&logoColor=FFFFFF&label=) <img src="https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white"/>&nbsp;                                                                          |
 
-# 기술적인 도전 및 트러블 슈팅
+## 5. 기술적인 도전 및 트러블 슈팅
 
 1. Redis를 통한 API 응답속도 개선
 
@@ -156,7 +163,7 @@
   - 서울 생활이동 데이터 22년 11월까지 제공되어 예측 데이터를 이용해 23년 2월 데이터까지 예측 가능
   - 데이터가 많을 수록 더 길게 예측 가능
 
-# 팀원
+## 6. 팀원
 
 | 이름   | 포지션   | Github                                |
 | ------ | -------- | ------------------------------------- |
